@@ -1,4 +1,4 @@
-import currencies from './examples/sorted-currencies.json';
+import currencies from './sorted-currencies.json';
 
 type CurrencyT = {
   code: string;
