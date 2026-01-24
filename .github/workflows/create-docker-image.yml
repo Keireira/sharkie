@@ -1,4 +1,4 @@
-name: Build
+name: Create docker image
 
 on:
   push:
@@ -13,8 +13,9 @@ on:
         required: true
 
 jobs:
-  build:
+  create-docker-image:
     runs-on: ubuntu-latest
+    environment: own-docker-creds
 
     steps:
       - name: Checkout
