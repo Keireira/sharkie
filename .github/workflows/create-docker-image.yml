@@ -15,7 +15,7 @@ on:
 jobs:
   create-docker-image:
     runs-on: ubuntu-latest
-    environment: own-docker-creds
+    environment: registry
 
     steps:
       - name: Checkout
