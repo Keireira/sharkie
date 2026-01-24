@@ -1,5 +1,5 @@
 # Stage 1: Build Stage
-FROM rust:1.83-bookworm AS build-stage
+FROM rust:1.93-bookworm AS build-stage
 
 RUN apt update && \
   apt install -y --no-install-recommends \
