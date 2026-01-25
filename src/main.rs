@@ -9,13 +9,8 @@ use chrono::{NaiveDate, TimeDelta};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::{PgPool, postgres::PgPoolOptions};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use tokio::net::TcpListener;
-
-const BLACKLIST: [&str; 24] = [
-    "YER", "XAG", "XAU", "SOS", "SAR", "QAR", "PKR", "LYD", "KWD", "JOD", "IQD", "IRR", "DZD",
-    "BTG", "AFN", "BHD", "MAD", "SDG", "DJF", "GMD", "BND", "TND", "OMR", "MVR",
-];
 
 #[derive(Debug, Deserialize)]
 struct HistoryQuery {
@@ -218,7 +213,6 @@ async fn get_history(
 async fn seed_database(pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> {
     let api_url = std::env::var("CURRENCY_API_URL")?;
     let api_key = std::env::var("CURRENCY_API_KEY")?;
-    let blacklist: HashSet<&str> = BLACKLIST.iter().copied().collect();
 
     let client = reqwest::Client::new();
 
@@ -236,11 +230,9 @@ async fn seed_database(pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> 
         );
         let response: CurrencyApiHistoryResponse = client.get(&url).send().await?.json().await?;
 
-        // Filter and collect rates (skip blacklisted and null values)
         let filtered_rates: Vec<(String, f64)> = response
             .rates
             .into_iter()
-            .filter(|(code, _)| !blacklist.contains(code.as_str()))
             .filter_map(|(code, rate)| rate.map(|r| (code, r)))
             .collect();
 
@@ -288,7 +280,6 @@ async fn seed_database(pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> 
 async fn fetch_today_rates(pool: &PgPool) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let api_url = std::env::var("CURRENCY_API_URL")?;
     let api_key = std::env::var("CURRENCY_API_KEY")?;
-    let blacklist: HashSet<&str> = BLACKLIST.iter().copied().collect();
 
     let today = chrono::Local::now().date_naive();
 
@@ -313,11 +304,9 @@ async fn fetch_today_rates(pool: &PgPool) -> Result<(), Box<dyn std::error::Erro
         return Err("API returned invalid response".into());
     }
 
-    // Filter and collect rates
     let filtered_rates: Vec<(String, f64)> = response
         .rates
         .into_iter()
-        .filter(|(code, _)| !blacklist.contains(code.as_str()))
         .filter_map(|(code, rate)| rate.map(|r| (code, r)))
         .collect();
 
