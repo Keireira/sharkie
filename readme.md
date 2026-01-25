@@ -1,5 +1,9 @@
 # Sharkie
 
+![GitHub License](https://img.shields.io/github/license/Keireira/sharkie)
+[![Registry](https://img.shields.io/github/deployments/Keireira/sharkie/registry?label=registry&style=flat-square)](https://github.com/Keireira/sharkie/deployments/registry)
+[![Production](https://img.shields.io/github/deployments/Keireira/sharkie/production?label=production&style=flat-square)](https://github.com/Keireira/sharkie/deployments/production)
+
 Currency exchange rates API with historical data from 2000 to present.
 
 ## API Reference
