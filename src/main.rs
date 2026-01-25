@@ -210,24 +210,60 @@ async fn get_history(
     Ok(Json(response))
 }
 
-async fn seed_database(pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> {
+async fn backfill_missing_rates(
+    pool: &PgPool,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let api_url = std::env::var("CURRENCY_API_URL")?;
     let api_key = std::env::var("CURRENCY_API_KEY")?;
 
+    let start_date = NaiveDate::from_ymd_opt(2000, 1, 1).unwrap();
+    let end_date = chrono::Local::now().date_naive() - TimeDelta::days(1);
+
+    // Get all dates that already have data
+    let existing_dates: Vec<(NaiveDate,)> =
+        sqlx::query_as("SELECT DISTINCT date FROM exchange_rates WHERE date >= $1 AND date <= $2")
+            .bind(start_date)
+            .bind(end_date)
+            .fetch_all(pool)
+            .await?;
+
+    let existing_set: std::collections::HashSet<NaiveDate> =
+        existing_dates.into_iter().map(|(d,)| d).collect();
+
+    // Collect all dates without data
+    let mut missing_dates: Vec<NaiveDate> = Vec::new();
+    let mut current = start_date;
+    while current <= end_date {
+        if !existing_set.contains(&current) {
+            missing_dates.push(current);
+        }
+        current = current + TimeDelta::days(1);
+    }
+
+    if missing_dates.is_empty() {
+        println!(
+            "All historical data present ({} to {})",
+            start_date, end_date
+        );
+        return Ok(());
+    }
+
+    println!(
+        "Found {} missing dates, starting backfill...",
+        missing_dates.len()
+    );
+
     let client = reqwest::Client::new();
 
-    let start_date = NaiveDate::from_ymd_opt(2000, 1, 1).unwrap();
-    let end_date = chrono::Local::now().date_naive();
-
-    let mut current_date = start_date;
-    while current_date <= end_date {
-        let date_str = current_date.format("%Y-%m-%d").to_string();
+    for date in missing_dates {
+        let date_str = date.format("%Y-%m-%d").to_string();
         println!("Fetching rates for {}", date_str);
 
         let url = format!(
             "{}history?date={}&base=USD&key={}",
             api_url, date_str, api_key
         );
+
         let response: CurrencyApiHistoryResponse = client.get(&url).send().await?.json().await?;
 
         let filtered_rates: Vec<(String, f64)> = response
@@ -237,7 +273,6 @@ async fn seed_database(pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> 
             .collect();
 
         if filtered_rates.is_empty() {
-            current_date = current_date + TimeDelta::days(1);
             continue;
         }
 
@@ -259,21 +294,19 @@ async fn seed_database(pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> 
         query.push_str(&values.join(", "));
         query.push_str(" ON CONFLICT (currency_code, date) DO UPDATE SET rate = EXCLUDED.rate");
 
-        // Bind all parameters
         let mut q = sqlx::query(&query);
         for (currency_code, rate) in &filtered_rates {
             q = q
                 .bind(currency_code)
-                .bind(current_date)
+                .bind(date)
                 .bind(rust_decimal::Decimal::try_from(*rate).unwrap_or_default());
         }
         q.execute(pool).await?;
 
         println!("Saved {} rates for {}", filtered_rates.len(), date_str);
-        current_date = current_date + TimeDelta::days(1);
     }
 
-    println!("Seeding complete!");
+    println!("Backfill complete!");
     Ok(())
 }
 
@@ -350,8 +383,8 @@ async fn daily_rate_updater(pool: PgPool) {
             eprintln!("Failed to fetch today's rates: {}", e);
         }
 
-        // Sleep for 1 hour, then check again
-        tokio::time::sleep(tokio::time::Duration::from_secs(3600)).await;
+        // Sleep for 2 hours, then check again
+        tokio::time::sleep(tokio::time::Duration::from_secs(7200)).await;
     }
 }
 
@@ -381,12 +414,10 @@ async fn main() {
 
     println!("Database connected and migrations applied");
 
-    // Check for --seed argument
-    let args: Vec<String> = std::env::args().collect();
-    if args.contains(&"--seed".to_string()) {
-        println!("Seeding database...");
-        seed_database(&pool).await.expect("Failed to seed database");
-        return;
+    // Check and backfill missing historical data
+    println!("Checking for missing historical data...");
+    if let Err(e) = backfill_missing_rates(&pool).await {
+        eprintln!("Warning: Failed to backfill missing rates: {}", e);
     }
 
     let state = AppState { db: pool.clone() };

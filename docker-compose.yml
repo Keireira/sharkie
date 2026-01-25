@@ -8,7 +8,7 @@ services:
     volumes:
       - sharkie_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sharkie} -d ${POSTGRES_DB:-sharkie}"]
+      test: ["CMD-SHELL", "pg_isready -U sharkie -d sharkie"]
       interval: 30s
       timeout: 10s
       retries: 5
