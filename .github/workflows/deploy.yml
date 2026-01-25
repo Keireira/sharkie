@@ -1,0 +1,25 @@
+name: Deploy image
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      DOCKER_REGISTRY_USERNAME:
+        required: true
+      DOCKER_REGISTRY_PASSWORD:
+        required: true
+      HOSTNAME:
+        required: true
+      AUTH_USER:
+        required: true
+      AUTH_KEY:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
