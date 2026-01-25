@@ -16,7 +16,7 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 
 COPY ./migrations ./migrations
-RUN apt-get update && apt-get -y install ca-certificates libssl-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get -y install ca-certificates libssl-dev curl && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install libpq5 -y
 COPY --from=build-stage /app/target/release/sharkie /usr/bin

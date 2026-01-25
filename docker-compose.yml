@@ -9,7 +9,7 @@ services:
       - sharkie_db_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sharkie -d sharkie"]
-      interval: 30s
+      interval: 15s
       timeout: 10s
       retries: 5
     networks:
@@ -25,7 +25,7 @@ services:
       org.opencontainers.image.authors: "Alena Dzhukich <mail@alena.red>"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
+      interval: 15s
       timeout: 10s
       retries: 5
     ports:
