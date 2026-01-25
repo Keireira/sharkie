@@ -11,6 +11,8 @@ on:
         required: true
       DOCKER_REGISTRY_PASSWORD:
         required: true
+      HOOK_TOKEN:
+        required: true
 
 jobs:
   create-docker-image:
@@ -35,3 +37,6 @@ jobs:
 
       - name: Publish
         run: docker push "registry.keireira.com/sharkie:latest"
+
+      - name: Registry cleanup
+        run: "curl -H 'X-Webhook-Token: ${{ secrets.HOOK_TOKEN }}' https://hooks.keireira.com/registry-cleanup"
