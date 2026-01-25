@@ -21,5 +21,24 @@ jobs:
     environment: production
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Copy docker-compose to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOSTNAME }}
+          username: ${{ secrets.AUTH_USER }}
+          key: ${{ secrets.AUTH_KEY }}
+          source: "docker-compose.yml"
+          target: "/opt/sharkie"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOSTNAME }}
+          username: ${{ secrets.AUTH_USER }}
+          key: ${{ secrets.AUTH_KEY }}
+          script: |
+            cd /opt/sharkie
+            docker login registry.keireira.com -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" -p "${{ secrets.DOCKER_REGISTRY_PASSWORD }}"
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -f
