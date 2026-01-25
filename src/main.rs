@@ -14,9 +14,9 @@ use tokio::net::TcpListener;
 
 #[derive(Debug, Deserialize)]
 struct HistoryQuery {
-    date: String, // "2024-01-01,2024-01-02"
+    date: String,
     #[serde(default)]
-    currencies: Option<String>, // "EUR,GBP,UAH"
+    currencies: Option<String>,
 }
 
 const MAX_RESPONSE_SIZE: usize = 512 * 1024; // 512 KB
