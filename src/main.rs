@@ -22,6 +22,8 @@ struct HistoryQuery {
     to: Option<String>,
     #[serde(default)]
     currencies: Option<String>,
+    #[serde(default)]
+    base: Option<String>,
 }
 
 const MAX_RESPONSE_SIZE: usize = 512 * 1024; // 512 KB
@@ -45,7 +47,7 @@ struct DayRates {
 
 #[derive(Debug, Serialize)]
 struct HistoryResponse {
-    base: &'static str,
+    base: String,
     data: Vec<DayRates>,
 }
 
@@ -247,6 +249,11 @@ async fn get_history(
         return Err(ApiError::NotFound);
     }
 
+    let base = query
+        .base
+        .map(|b| b.trim().to_uppercase())
+        .unwrap_or_else(|| "USD".to_string());
+
     // Group by date
     let mut data: HashMap<NaiveDate, HashMap<String, f64>> = HashMap::new();
     for r in rates {
@@ -258,6 +265,73 @@ async fn get_history(
         }
     }
 
+    // Recalculate rates if base is not USD
+    if base != "USD" {
+        // If the base currency rate is missing for any date, fetch it
+        let dates_missing_base: Vec<NaiveDate> = data
+            .iter()
+            .filter(|(_, rates)| !rates.contains_key(&base))
+            .map(|(date, _)| *date)
+            .collect();
+
+        if !dates_missing_base.is_empty() {
+            let placeholders: Vec<String> = (1..=dates_missing_base.len())
+                .map(|i| format!("${}", i))
+                .collect();
+            let sql = format!(
+                "SELECT currency_code, date, rate FROM exchange_rates
+                 WHERE date IN ({}) AND currency_code = ${}",
+                placeholders.join(", "),
+                dates_missing_base.len() + 1
+            );
+            let mut q = sqlx::query_as::<_, ExchangeRate>(&sql);
+            for date in &dates_missing_base {
+                q = q.bind(date);
+            }
+            q = q.bind(&base);
+            let base_rates = q
+                .fetch_all(&state.db)
+                .await
+                .map_err(|_| ApiError::InternalServerError)?;
+
+            for r in base_rates {
+                use rust_decimal::prelude::ToPrimitive;
+                if let Some(rate_f64) = r.rate.to_f64() {
+                    data.entry(r.date).or_default().insert(r.currency_code.clone(), rate_f64);
+                }
+            }
+        }
+
+        for (_, rates) in data.iter_mut() {
+            let base_rate = match rates.get(&base) {
+                Some(&r) if r != 0.0 => r,
+                _ => {
+                    return Err(ApiError::InvalidInput(format!(
+                        "No rate found for base currency '{}'",
+                        base
+                    )));
+                }
+            };
+
+            // Recalculate: new_rate = usd_rate / base_rate
+            // Add USD as 1/base_rate, remove the base currency
+            let recalculated: HashMap<String, f64> = rates
+                .iter()
+                .filter(|(code, _)| *code != &base)
+                .map(|(code, rate)| (code.clone(), rate / base_rate))
+                .collect();
+
+            *rates = recalculated;
+            let include_usd = match &currency_filter {
+                Some(currencies) => currencies.iter().any(|c| c == "USD"),
+                None => true,
+            };
+            if include_usd {
+                rates.insert("USD".to_string(), 1.0 / base_rate);
+            }
+        }
+    }
+
     // Convert to sorted vec
     let mut day_rates: Vec<DayRates> = data
         .into_iter()
@@ -266,7 +340,7 @@ async fn get_history(
     day_rates.sort_by_key(|d| d.date);
 
     let response = HistoryResponse {
-        base: "USD",
+        base,
         data: day_rates,
     };
 
