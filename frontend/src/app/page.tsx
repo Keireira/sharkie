@@ -126,6 +126,18 @@ const Spinner = styled(motion.div)`
 	border-radius: 50%;
 `;
 
+const VisuallyHidden = styled.h1`
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+`;
+
 const Home = () => {
 	const { settings, setSettings, isLoaded, calcOpen, setCalcOpen, viewMode } = useAppSettings();
 	const { data, isLoading, isError, error } = useRatesQuery(settings);
@@ -240,9 +252,10 @@ const Home = () => {
 			<TopBar />
 			<MainArea>
 				<Content>
+					<VisuallyHidden>Sharkie — Live Currency Exchange Rates Dashboard</VisuallyHidden>
 					<Grid>
 						{/* Row 1: Currency cards (full width) */}
-						<FullRow id="cards">
+						<FullRow id="cards" aria-label="Currency overview cards">
 							<CurrencyCards
 								data={data}
 								currencies={filteredCurrencies}
@@ -253,7 +266,7 @@ const Home = () => {
 						</FullRow>
 
 						{/* Row 3: Chart / Table (full width) */}
-						<FullRow id="chart">
+						<FullRow id="chart" aria-label="Exchange rate chart and table">
 							<ChartTableView
 								data={data}
 								isLoading={isLoading}
@@ -265,20 +278,20 @@ const Home = () => {
 						</FullRow>
 
 						{/* Row 4: Map (left) + History (right) */}
-						<MainCol id="map">
+						<MainCol id="map" aria-label="Currency world map">
 							<CurrencyMap currencies={filteredCurrencies} onAddCurrency={handleToggleMapCurrency} />
 						</MainCol>
-						<SideCol id="history">
+						<SideCol id="history" aria-label="Currency rate history">
 							<CurrencyHistory data={data} currencies={filteredCurrencies} />
 						</SideCol>
 
 						{/* Volatility Heatmap (full width) */}
-						<FullRow id="heatmap">
+						<FullRow id="heatmap" aria-label="Volatility heatmap">
 							<VolatilityHeatmap data={data} currencies={filteredCurrencies} />
 						</FullRow>
 
 						{/* Period Comparison (full width) */}
-						<FullRow id="comparison">
+						<FullRow id="comparison" aria-label="Period comparison">
 							<PeriodComparison
 								currentData={data}
 								compareData={compareData}
@@ -289,7 +302,7 @@ const Home = () => {
 						</FullRow>
 
 						{/* Currency Library (full width) */}
-						<FullRow id="library">
+						<FullRow id="library" aria-label="Currency library">
 							<CurrencyLibrary />
 						</FullRow>
 

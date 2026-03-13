@@ -858,12 +858,12 @@ const SidebarContent = ({
 				</ChipsWrap>
 			</WidgetArea>
 
-			<NavWrap>
+			<NavWrap role="navigation" aria-label="Dashboard sections">
 				{NAV_SECTIONS.map((section) => (
 					<SectionGroup key={section.labelKey}>
 						<SectionLabel>{t(section.labelKey)}</SectionLabel>
 						{section.items.map((item) => (
-							<NavItem key={item.id} $active={activeId === item.id} onClick={() => onNavClick(item.id)}>
+							<NavItem key={item.id} $active={activeId === item.id} onClick={() => onNavClick(item.id)} aria-current={activeId === item.id ? 'true' : undefined}>
 								<NavIcon id={item.icon} />
 								{t(item.key)}
 							</NavItem>

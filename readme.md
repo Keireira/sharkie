@@ -4,11 +4,9 @@
 [![Registry](https://img.shields.io/github/deployments/Keireira/sharkie/registry?label=registry&style=flat-square)](https://github.com/Keireira/sharkie/deployments/registry)
 [![Production](https://img.shields.io/github/deployments/Keireira/sharkie/production?label=production&style=flat-square)](https://github.com/Keireira/sharkie/deployments/production)
 ![language count](https://img.shields.io/github/languages/count/Keireira/sharkie/)
-![repo size](https://img.shields.io/github/repo-size/Keireira/sharkie/)
-![GitHub Created At](https://img.shields.io/github/created-at/keireira/sharkie)
+![GitHub repo size](https://img.shields.io/github/repo-size/Keireira/sharkie)
+![GitHub language count](https://img.shields.io/github/languages/count/Keireira/sharkie)
 ![GitHub last commit](https://img.shields.io/github/last-commit/keireira/sharkie)
-
-Currency exchange rates API with historical data from 2000 to present.
 
 ## Front-End part
 
@@ -132,11 +130,11 @@ GET /history?date=2024-01-15,2024-01-16&currencies=EUR,RUB,KZT
 
 ### Environment Variables
 
-| Variable           | Description                       |
-| ------------------ | --------------------------------- |
-| `DATABASE_URL`     | PostgreSQL connection string      |
-| `CURRENCY_API_URL` | <https://currencyapi.net/api/v2/> |
-| `CURRENCY_API_KEY` | currencyapi.net API key           |
+| Variable           | Description                  |
+| ------------------ | ---------------------------- |
+| `DATABASE_URL`     | PostgreSQL connection string |
+| `CURRENCY_API_URL` | <https://xxx.zzz/api/>       |
+| `CURRENCY_API_KEY` | API key                      |
 
 ### Docker
 
@@ -155,7 +153,7 @@ Server starts on `http://0.0.0.0:3000`
 ## Background Tasks
 
 - **Startup**: checks for missing dates from 2000-01-01 to yesterday and backfills them from external API
-- **Every 2 hours**: fetches today's exchange rates if not already present
+- **Every 4 hours**: fetches today's exchange rates if not already present
 
 ## License
 
