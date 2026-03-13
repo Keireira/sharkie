@@ -96,6 +96,20 @@ impl IntoResponse for ApiError {
     }
 }
 
+async fn get_currencies(
+    State(state): State<AppState>,
+) -> Result<Json<serde_json::Value>, ApiError> {
+    let rows: Vec<(String,)> =
+        sqlx::query_as("SELECT DISTINCT currency_code FROM exchange_rates ORDER BY currency_code")
+            .fetch_all(&state.db)
+            .await
+            .map_err(|_| ApiError::InternalServerError)?;
+
+    let currencies: Vec<String> = rows.into_iter().map(|(code,)| code).collect();
+
+    Ok(Json(json!({ "currencies": currencies })))
+}
+
 async fn health_check() -> impl IntoResponse {
     return Json(json!({
         "status": "ok",
@@ -570,6 +584,7 @@ async fn daily_rate_updater(pool: PgPool) {
 fn create_app(state: AppState) -> Router {
     Router::new()
         .route("/health", get(health_check))
+        .route("/currencies", get(get_currencies))
         .route("/history", get(get_history))
         .with_state(state)
 }
