@@ -5,7 +5,7 @@ use axum::{
     response::{IntoResponse, Response},
     routing::get,
 };
-use chrono::{NaiveDate, TimeDelta};
+use chrono::{NaiveDate, TimeDelta, Utc, Timelike};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::{PgPool, postgres::PgPoolOptions};
@@ -138,7 +138,7 @@ async fn get_history(
             .collect();
 
         let sql = format!(
-            "SELECT currency_code, date, rate FROM exchange_rates 
+            "SELECT currency_code, date, rate FROM exchange_rates
              WHERE date IN ({}) AND currency_code IN ({})
              ORDER BY date, currency_code",
             date_placeholders.join(", "),
@@ -157,7 +157,7 @@ async fn get_history(
             .map_err(|_| ApiError::InternalServerError)?
     } else {
         let sql = format!(
-            "SELECT currency_code, date, rate FROM exchange_rates 
+            "SELECT currency_code, date, rate FROM exchange_rates
              WHERE date IN ({})
              ORDER BY date, currency_code",
             date_placeholders.join(", ")
@@ -217,7 +217,7 @@ async fn backfill_missing_rates(
     let api_key = std::env::var("CURRENCY_API_KEY")?;
 
     let start_date = NaiveDate::from_ymd_opt(2000, 1, 1).unwrap();
-    let end_date = chrono::Local::now().date_naive() - TimeDelta::days(1);
+    let end_date = Utc::now().date_naive() - TimeDelta::days(1);
 
     // Get all dates that already have data
     let existing_dates: Vec<(NaiveDate,)> =
@@ -314,18 +314,7 @@ async fn fetch_today_rates(pool: &PgPool) -> Result<(), Box<dyn std::error::Erro
     let api_url = std::env::var("CURRENCY_API_URL")?;
     let api_key = std::env::var("CURRENCY_API_KEY")?;
 
-    let today = chrono::Local::now().date_naive();
-
-    // Check if we already have today's rates
-    let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM exchange_rates WHERE date = $1")
-        .bind(today)
-        .fetch_one(pool)
-        .await?;
-
-    if count.0 > 0 {
-        println!("Today's rates ({}) already exist, skipping fetch", today);
-        return Ok(());
-    }
+    let today = Utc::now().date_naive();
 
     println!("Fetching today's rates ({})", today);
 
@@ -377,14 +366,43 @@ async fn fetch_today_rates(pool: &PgPool) -> Result<(), Box<dyn std::error::Erro
     Ok(())
 }
 
+/// Returns seconds until the next target time (00:05, 23:55, or every 4 hours in between).
+fn seconds_until_next_fetch() -> u64 {
+    let now = Utc::now();
+    let current_secs = now.hour() * 3600 + now.minute() * 60 + now.second();
+
+    // Target times in seconds from midnight UTC
+    let targets: &[u32] = &[
+        5 * 60,             // 00:05
+        4 * 3600,           // 04:00
+        8 * 3600,           // 08:00
+        12 * 3600,          // 12:00
+        16 * 3600,          // 16:00
+        20 * 3600,          // 20:00
+        23 * 3600 + 55 * 60, // 23:55
+    ];
+
+    for &t in targets {
+        if current_secs < t {
+            return (t - current_secs) as u64;
+        }
+    }
+
+    // Past 23:55 today, wait until 00:05 tomorrow
+    ((24 * 3600 - current_secs) + 5 * 60) as u64
+}
+
 async fn daily_rate_updater(pool: PgPool) {
     loop {
+        let wait = seconds_until_next_fetch();
+        let hours = wait / 3600;
+        let mins = (wait % 3600) / 60;
+        println!("Next rate fetch in {}h {}m", hours, mins);
+        tokio::time::sleep(tokio::time::Duration::from_secs(wait)).await;
+
         if let Err(e) = fetch_today_rates(&pool).await {
             eprintln!("Failed to fetch today's rates: {}", e);
         }
-
-        // Sleep for 2 hours, then check again
-        tokio::time::sleep(tokio::time::Duration::from_secs(7200)).await;
     }
 }
 

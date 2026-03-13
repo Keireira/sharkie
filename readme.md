@@ -119,7 +119,7 @@ GET /history?date=2024-01-15,2024-01-16&currencies=EUR,RUB,KZT
 | Variable           | Description                    |
 |--------------------|--------------------------------|
 | `DATABASE_URL`     | PostgreSQL connection string   |
-| `CURRENCY_API_URL` | <https://currencyapi.net/api/v1/> |
+| `CURRENCY_API_URL` | <https://currencyapi.net/api/v2/> |
 | `CURRENCY_API_KEY` | currencyapi.net API key      |
 
 ### Docker
