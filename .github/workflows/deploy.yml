@@ -3,7 +3,7 @@ name: Deploy image
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Create docker image"]
+    workflows: ["Create docker image", "Create frontend docker image"]
     types:
       - completed
     branches:

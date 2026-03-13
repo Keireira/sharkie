@@ -1,10 +1,10 @@
-name: Create docker image
+name: Create frontend docker image
 
 on:
   push:
     branches:
       - master
-    paths-ignore:
+    paths:
       - "frontend/**"
   workflow_dispatch:
   workflow_call:
@@ -34,11 +34,12 @@ jobs:
 
       - name: Build
         run: |
-          docker build --file Dockerfile \
-            --tag "registry.keireira.com/sharkie:latest" .
+          docker build --file frontend/Dockerfile \
+            --tag "registry.keireira.com/sharkie-fe:latest" \
+            frontend
 
       - name: Publish
-        run: docker push "registry.keireira.com/sharkie:latest"
+        run: docker push "registry.keireira.com/sharkie-fe:latest"
 
       - name: Registry cleanup
         run: "curl -H 'X-Webhook-Token: ${{ secrets.HOOK_TOKEN }}' https://hooks.keireira.com/registry-cleanup"

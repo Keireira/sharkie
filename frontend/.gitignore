@@ -1,0 +1,13 @@
+.next/
+node_modules/
+out/
+build/
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/swe-worker-*.js
+*.tsbuildinfo
+.DS_Store
+.env
+.env.local

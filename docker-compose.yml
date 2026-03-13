@@ -38,6 +38,30 @@ services:
     networks:
       - sharkie-network
 
+  frontend:
+    image: registry.keireira.com/sharkie-fe:latest
+    container_name: SHARKIE-FE
+    restart: unless-stopped
+    labels:
+      org.opencontainers.image.title: "Sharkie — Exchange Rates Frontend"
+      org.opencontainers.image.description: "sharkie.keireira.com"
+      org.opencontainers.image.authors: "Alena Dzhukich <mail@alena.red>"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    ports:
+      - 127.0.0.1:3333:3000
+    environment:
+      - API_BASE=http://SHARKIE-APP:3000
+      - NEXT_PUBLIC_API_BASE=/api/proxy
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - sharkie-network
+
 volumes:
   sharkie_db_data:
 
