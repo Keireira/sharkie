@@ -1,3 +1,6 @@
 target/
 .env
 trash/
+
+.DS_Store
+.claude

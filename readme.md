@@ -19,6 +19,13 @@ Currency exchange rates API with historical data from 2000 to present.
 
 Base URL: `http://localhost:3000`
 
+## Crontab
+```
+crontab -e
+
+0 3 * * * /path/to/backup.sh && find $HOME/sharkie_backups -name "*.dump" -mtime +30 -delete
+```
+
 ### Health Check
 
 ```
