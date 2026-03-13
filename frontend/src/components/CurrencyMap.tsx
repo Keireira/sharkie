@@ -83,10 +83,9 @@ for (const [currency, { countries }] of Object.entries(CURRENCY_COUNTRIES)) {
 	}
 }
 
-const PALETTE = [
-	'#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316',
-	'#eab308', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6'
-];
+import { CURRENCY_PALETTE } from '@/lib/currencies';
+
+const PALETTE = CURRENCY_PALETTE;
 
 /* Compute center + zoom to fit all active currencies */
 function computeFocus(currencies: string[]): { center: [number, number]; zoom: number } {

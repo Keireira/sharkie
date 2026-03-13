@@ -19,10 +19,9 @@ import type { HistoryResponse } from '@/lib/api';
 import type { AppTheme } from '@/lib/theme';
 import { CURRENCY_FLAGS, getCurrencyName, formatRate as fmtRate } from '@/lib/currencies';
 
-const CHART_COLORS = [
-	'#818cf8', '#a78bfa', '#f472b6', '#fb7185', '#fb923c',
-	'#fbbf24', '#34d399', '#2dd4bf', '#22d3ee', '#60a5fa'
-];
+import { CURRENCY_PALETTE } from '@/lib/currencies';
+
+const CHART_COLORS = CURRENCY_PALETTE;
 
 const shimmer = keyframes`
 	0% { background-position: -200% 0; }

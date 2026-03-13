@@ -15,8 +15,10 @@ import VolatilityHeatmap from '@/components/VolatilityHeatmap';
 import PeriodComparison from '@/components/PeriodComparison';
 import CatMascot, { type CatMood } from '@/components/CatMascot';
 import Footer from '@/components/Footer';
+import CalculatorView from '@/components/CalculatorView';
 import { useAppSettings } from '@/providers/Providers';
 import { useRatesQuery, useCompareRatesQuery, type CompareMode } from '@/hooks/useRates';
+import { useFeedRateStore } from '@/hooks/useRateStore';
 
 const DashboardShell = styled.div`
 	display: flex;
@@ -125,10 +127,19 @@ const Spinner = styled(motion.div)`
 `;
 
 const Home = () => {
-	const { settings, setSettings, isLoaded, calcOpen, setCalcOpen } = useAppSettings();
+	const { settings, setSettings, isLoaded, calcOpen, setCalcOpen, viewMode } = useAppSettings();
 	const { data, isLoading, isError, error } = useRatesQuery(settings);
 	const [compareMode, setCompareMode] = useState<CompareMode>('year');
 	const { data: compareData } = useCompareRatesQuery(settings, compareMode);
+	const feedStore = useFeedRateStore();
+
+	// Feed dashboard data into centralized rate store
+	useEffect(() => {
+		if (data) feedStore(data, data.base);
+	}, [data, feedStore]);
+	useEffect(() => {
+		if (compareData) feedStore(compareData, compareData.base);
+	}, [compareData, feedStore]);
 	const [hasGreeted, setHasGreeted] = useState(false);
 	const [chartCurrencies, setChartCurrencies] = useState<string[]>([]);
 	const [catPos, setCatPos] = useState<{ xPct: number; yPct: number } | null>(null);
@@ -184,7 +195,7 @@ const Home = () => {
 		if (code === settings.baseCurrency) return;
 		if (settings.selectedCurrencies.includes(code)) {
 			setSettings({ selectedCurrencies: settings.selectedCurrencies.filter((c) => c !== code) });
-		} else {
+		} else if (settings.selectedCurrencies.length < 6) {
 			setSettings({ selectedCurrencies: [...settings.selectedCurrencies, code] });
 		}
 	}, [settings.selectedCurrencies, settings.baseCurrency, setSettings]);
@@ -211,6 +222,18 @@ const Home = () => {
 		);
 	}
 
+	if (viewMode === 'calculator') {
+		return (
+			<DashboardShell>
+				<Sidebar />
+				<TopBar />
+				<MainArea>
+					<CalculatorView />
+				</MainArea>
+			</DashboardShell>
+		);
+	}
+
 	return (
 		<DashboardShell>
 			<Sidebar />
@@ -225,6 +248,7 @@ const Home = () => {
 								currencies={filteredCurrencies}
 								chartCurrencies={chartCurrencies}
 								onToggleChart={toggleChartCurrency}
+								isLoading={isLoading}
 							/>
 						</FullRow>
 

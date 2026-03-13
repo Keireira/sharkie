@@ -2,7 +2,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { useAppSettings } from '@/providers/Providers';
+import { useAppSettings, type ViewMode } from '@/providers/Providers';
 
 const Bar = styled.header`
 	position: fixed;
@@ -72,14 +72,40 @@ const MobileTitle = styled.span`
 	font-weight: 700;
 	color: ${({ theme }) => theme.colors.text};
 	margin-left: 12px;
+	flex: 1;
 
 	@media (max-width: 768px) {
 		display: block;
 	}
 `;
 
+const ViewToggleBtn = styled.button<{ $active?: boolean }>`
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: 1px solid ${({ theme }) => theme.colors.border};
+	border-radius: 10px;
+	background: ${({ $active, theme }) => ($active ? theme.colors.accentGlow : 'transparent')};
+	color: ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.textMuted)};
+	cursor: pointer;
+	transition: all 0.15s;
+	&:hover {
+		border-color: ${({ theme }) => theme.colors.accent};
+		color: ${({ theme }) => theme.colors.accent};
+	}
+	svg { width: 16px; height: 16px; }
+
+	@media (max-width: 768px) {
+		display: flex;
+	}
+`;
+
 const TopBar = () => {
-	const { setSidebarOpen } = useAppSettings();
+	const { setSidebarOpen, viewMode, setViewMode } = useAppSettings();
+
+	const toggleView = () => setViewMode(viewMode === 'dashboard' ? 'calculator' : 'dashboard');
 
 	return (
 		<Bar>
@@ -91,6 +117,20 @@ const TopBar = () => {
 				</HamburgerIcon>
 			</HamburgerButton>
 			<MobileTitle>Sharkie</MobileTitle>
+			<ViewToggleBtn $active={viewMode === 'dashboard'} onClick={toggleView} aria-label="Toggle view">
+				{viewMode === 'calculator' ? (
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+						<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+						<line x1="1" y1="10" x2="23" y2="10" />
+					</svg>
+				) : (
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+						<rect x="4" y="2" width="16" height="20" rx="2" />
+						<line x1="8" y1="6" x2="16" y2="6" />
+						<line x1="8" y1="10" x2="16" y2="10" />
+					</svg>
+				)}
+			</ViewToggleBtn>
 		</Bar>
 	);
 };

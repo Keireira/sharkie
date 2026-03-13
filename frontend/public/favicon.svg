@@ -1,0 +1,19 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blåhaj-style shark favicon: side profile, transparent bg -->
+  <!-- Tail -->
+  <path d="M3 10 Q1 7 2 4 L5 9 Z" fill="#5B8FA1"/>
+  <path d="M3 18 Q1 21 2 24 L5 19 Z" fill="#5B8FA1"/>
+  <!-- Body: elongated rounded shape facing right -->
+  <path d="M5 8 Q10 3 20 5 Q28 7 30 14 Q30 21 22 24 Q14 26 8 22 Q3 18 5 8 Z" fill="#6B9DAF"/>
+  <!-- Belly: white area -->
+  <path d="M10 14 Q14 10 22 12 Q27 14 27 18 Q24 23 16 24 Q10 23 8 19 Q7 16 10 14 Z" fill="#EDF2F7"/>
+  <!-- Dorsal fin -->
+  <path d="M14 5 L12 9 L17 8 Z" fill="#5B8FA1"/>
+  <!-- Pectoral fin -->
+  <path d="M16 20 Q14 25 12 26 Q13 23 14 21 Z" fill="#5B8FA1"/>
+  <!-- Eye: big dark circle -->
+  <circle cx="24" cy="13" r="3" fill="#2D3748"/>
+  <circle cx="25" cy="12" r="1" fill="white"/>
+  <!-- W mouth -->
+  <path d="M26 18 L27.5 17 L29 18.5 L30 17" stroke="#2D3748" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

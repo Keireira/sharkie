@@ -58,42 +58,42 @@ export const darkTheme = {
 export const lightTheme: AppTheme = {
 	name: 'light',
 	colors: {
-		// Backgrounds - warm off-white
-		bg: '#F8F9FA',
-		bgSecondary: '#EDF0F3',
-		// Cards - pure white with subtle warmth
+		// Backgrounds - warm rainbow-white (soft yellow → pink gradient feel)
+		bg: '#FFFAF5',
+		bgSecondary: '#FFF0F0',
+		// Cards - clean white, warm hover
 		card: '#FFFFFF',
-		cardHover: '#F5F7FA',
-		// Borders - soft neutral
-		border: 'rgba(0, 0, 0, 0.07)',
-		borderHover: 'rgba(59, 130, 246, 0.3)',
-		// Text - rich dark hierarchy
-		text: '#0F172A',
-		textSecondary: '#475569',
-		textMuted: '#94A3B8',
-		// Accent - modern blue
-		accent: '#2563EB',
-		accentLight: '#3B82F6',
-		accentGlow: 'rgba(37, 99, 235, 0.08)',
-		// Status colors
-		success: '#059669',
-		danger: '#DC2626',
-		warning: '#D97706',
-		// Shadows - soft and layered
-		shadow: '0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)',
-		shadowSm: '0 1px 3px rgba(0, 0, 0, 0.05)',
-		shadowLg: '0 16px 48px rgba(0, 0, 0, 0.1), 0 6px 18px rgba(0, 0, 0, 0.05)',
-		// Glass - frosted white
-		glass: 'rgba(255, 255, 255, 0.8)',
-		glassBorder: 'rgba(0, 0, 0, 0.04)',
+		cardHover: '#FFF8F2',
+		// Borders - rainbow: blue tint default, red-orange on hover
+		border: 'rgba(0, 77, 255, 0.15)',
+		borderHover: 'rgba(228, 3, 3, 0.35)',
+		// Text - deep blue-black (from flag blue)
+		text: '#1B1464',
+		textSecondary: '#4A3D8F',
+		textMuted: '#8B80B8',
+		// Accent - flag red (primary rainbow color)
+		accent: '#E40303',
+		accentLight: '#FF4040',
+		accentGlow: 'rgba(228, 3, 3, 0.1)',
+		// Status - flag colors
+		success: '#008026',
+		danger: '#E40303',
+		warning: '#FF8C00',
+		// Shadows - multi-tinted (blue + pink)
+		shadow: '0 4px 20px rgba(0, 77, 255, 0.06), 0 1px 3px rgba(228, 3, 3, 0.04)',
+		shadowSm: '0 1px 3px rgba(117, 7, 135, 0.06)',
+		shadowLg: '0 16px 48px rgba(0, 77, 255, 0.08), 0 6px 18px rgba(228, 3, 3, 0.05)',
+		// Glass - frosted warm white
+		glass: 'rgba(255, 252, 248, 0.9)',
+		glassBorder: 'rgba(0, 77, 255, 0.12)',
 		// Chart
-		chartGrid: 'rgba(0, 0, 0, 0.05)',
-		// Cat accents - blue
-		catPrimary: '#2563EB',
-		catSecondary: '#1D4ED8',
-		// Gradients - blue to indigo
-		gradientStart: '#3B82F6',
-		gradientEnd: '#6366F1'
+		chartGrid: 'rgba(0, 77, 255, 0.06)',
+		// Cat - trans flag colors
+		catPrimary: '#FFAFC8',
+		catSecondary: '#73D7EE',
+		// Gradient - full rainbow: red → blue
+		gradientStart: '#E40303',
+		gradientEnd: '#004DFF'
 	},
 	borderRadius: darkTheme.borderRadius,
 	spacing: darkTheme.spacing

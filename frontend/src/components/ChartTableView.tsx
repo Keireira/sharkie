@@ -88,7 +88,7 @@ const ChartTableView = ({ data, isLoading, isError, error, chartCurrencies, tabl
 					currencies={chartCurrencies}
 				/>
 			) : (
-				<RatesTable data={data} currencies={tableCurrencies} />
+				<RatesTable data={data} currencies={chartCurrencies} isLoading={isLoading} />
 			)}
 		</Wrapper>
 	);

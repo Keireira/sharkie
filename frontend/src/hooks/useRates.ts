@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchRates, fetchHealth, fetchCurrencies } from '@/lib/api';
 import { format, subMonths, subWeeks, subYears } from 'date-fns';
@@ -106,6 +107,35 @@ export function useTodayAllRatesQuery(baseCurrency: string) {
 			}),
 		staleTime: 15 * 60 * 1000,
 		gcTime: 60 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		retry: 2
+	});
+}
+
+export function useCalcRateQuery(
+	fromCurrency: string,
+	toCurrency: string,
+	date: string,
+	enabled: boolean
+) {
+	// Always fetch both currencies relative to USD — convert on the frontend
+	const currencies = useMemo(() => {
+		const set = new Set([fromCurrency, toCurrency]);
+		set.delete('USD');
+		return Array.from(set);
+	}, [fromCurrency, toCurrency]);
+
+	return useQuery({
+		queryKey: ['calc-rate', date, ...currencies.sort()],
+		queryFn: () =>
+			fetchRates({
+				date,
+				base: 'USD',
+				currencies
+			}),
+		enabled: enabled && !!date,
+		staleTime: 60 * 60 * 1000,
+		gcTime: 24 * 60 * 60 * 1000,
 		refetchOnWindowFocus: false,
 		retry: 2
 	});

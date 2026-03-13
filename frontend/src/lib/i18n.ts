@@ -9,7 +9,7 @@ const resources = {
 			health: {
 				online: 'API Online',
 				offline: 'API Offline',
-				checking: 'Checking...'
+				checking: 'Connecting...'
 			},
 			search: {
 				placeholder: 'Search currencies...',
@@ -31,7 +31,9 @@ const resources = {
 				sectionNav: 'Navigation',
 				sectionData: 'Data',
 				dark: 'Dark',
-				light: 'Light'
+				light: 'Light',
+				dashboard: 'Dashboard',
+				calcMode: 'Calc Mode'
 			},
 			heatmap: {
 				title: 'Volatility Heatmap',
@@ -156,7 +158,7 @@ const resources = {
 			health: {
 				online: 'API онлайн',
 				offline: 'API офлайн',
-				checking: 'Проверка...'
+				checking: 'Подключение...'
 			},
 			search: {
 				placeholder: 'Поиск валют...',
@@ -178,7 +180,9 @@ const resources = {
 				sectionNav: 'Навигация',
 				sectionData: 'Данные',
 				dark: 'Тёмная',
-				light: 'Светлая'
+				light: 'Светлая',
+				dashboard: 'Дашборд',
+				calcMode: 'Калькулятор'
 			},
 			heatmap: {
 				title: 'Карта волатильности',
@@ -303,7 +307,7 @@ const resources = {
 			health: {
 				online: 'APIオンライン',
 				offline: 'APIオフライン',
-				checking: '確認中...'
+				checking: '接続中...'
 			},
 			search: {
 				placeholder: '通貨を検索...',
@@ -325,7 +329,9 @@ const resources = {
 				sectionNav: 'ナビゲーション',
 				sectionData: 'データ',
 				dark: 'ダーク',
-				light: 'ライト'
+				light: 'ライト',
+				dashboard: 'ダッシュボード',
+				calcMode: '計算モード'
 			},
 			heatmap: {
 				title: 'ボラティリティヒートマップ',
@@ -451,7 +457,7 @@ const resources = {
 			health: {
 				online: 'API en línea',
 				offline: 'API fuera de línea',
-				checking: 'Verificando...'
+				checking: 'Conectando...'
 			},
 			search: {
 				placeholder: 'Buscar divisas...',
@@ -473,7 +479,9 @@ const resources = {
 				sectionNav: 'Navegación',
 				sectionData: 'Datos',
 				dark: 'Oscuro',
-				light: 'Claro'
+				light: 'Claro',
+				dashboard: 'Panel',
+				calcMode: 'Modo Calc'
 			},
 			heatmap: {
 				title: 'Mapa de volatilidad',

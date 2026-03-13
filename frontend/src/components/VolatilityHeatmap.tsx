@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import type { HistoryResponse } from '@/lib/api';
-import { CURRENCY_FLAGS, getCurrencyName } from '@/lib/currencies';
+import { CURRENCY_FLAGS, getCurrencyName, CURRENCY_PALETTE } from '@/lib/currencies';
 
 const Section = styled(motion.div)`
 	display: flex;
@@ -215,18 +215,27 @@ const LegendSwatch = styled.div<{ $bg: string; $hatched: boolean }>`
 			: ''}
 `;
 
-/* Color logic: purple gradient inspired by the reference */
-function changeColor(absPct: number, maxPct: number): { bg: string; hatched: boolean } {
-	if (maxPct === 0) return { bg: 'rgba(139, 92, 246, 0.05)', hatched: true };
+/* Parse hex color to r,g,b */
+function hexToRgb(hex: string): [number, number, number] {
+	const h = hex.replace('#', '');
+	return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+/* Color logic: per-currency color from CURRENCY_PALETTE, intensity = volatility */
+function changeColor(absPct: number, maxPct: number, colorIdx: number): { bg: string; hatched: boolean } {
+	const baseHex = CURRENCY_PALETTE[colorIdx % CURRENCY_PALETTE.length];
+	const [r, g, b] = hexToRgb(baseHex);
+
+	if (maxPct === 0) return { bg: `rgba(${r}, ${g}, ${b}, 0.05)`, hatched: true };
 	const t = Math.min(absPct / maxPct, 1);
 
-	if (t < 0.05) return { bg: 'rgba(139, 92, 246, 0.08)', hatched: true };
-	if (t < 0.15) return { bg: 'rgba(139, 92, 246, 0.15)', hatched: true };
-	if (t < 0.3) return { bg: 'rgba(139, 92, 246, 0.25)', hatched: false };
-	if (t < 0.5) return { bg: 'rgba(139, 92, 246, 0.4)', hatched: false };
-	if (t < 0.7) return { bg: 'rgba(168, 85, 247, 0.6)', hatched: false };
-	if (t < 0.85) return { bg: 'rgba(168, 85, 247, 0.8)', hatched: false };
-	return { bg: 'rgba(192, 132, 252, 0.95)', hatched: false };
+	if (t < 0.05) return { bg: `rgba(${r}, ${g}, ${b}, 0.08)`, hatched: true };
+	if (t < 0.15) return { bg: `rgba(${r}, ${g}, ${b}, 0.18)`, hatched: true };
+	if (t < 0.3) return { bg: `rgba(${r}, ${g}, ${b}, 0.32)`, hatched: false };
+	if (t < 0.5) return { bg: `rgba(${r}, ${g}, ${b}, 0.5)`, hatched: false };
+	if (t < 0.7) return { bg: `rgba(${r}, ${g}, ${b}, 0.65)`, hatched: false };
+	if (t < 0.85) return { bg: `rgba(${r}, ${g}, ${b}, 0.8)`, hatched: false };
+	return { bg: `rgba(${r}, ${g}, ${b}, 0.95)`, hatched: false };
 }
 
 interface TooltipInfo {
@@ -324,7 +333,7 @@ const VolatilityHeatmap = ({ data, currencies }: VolatilityHeatmapProps) => {
 								</CurrLabel>
 								{matrix[ci]?.map((change, di) => {
 									const abs = Math.abs(change);
-									const { bg, hatched } = changeColor(abs, maxChange);
+									const { bg, hatched } = changeColor(abs, maxChange, ci);
 									return (
 										<Cell
 											key={`${code}-${dates[di]}`}
@@ -366,13 +375,12 @@ const VolatilityHeatmap = ({ data, currencies }: VolatilityHeatmapProps) => {
 				<LegendRow>
 					<LegendLabel>0</LegendLabel>
 					<LegendSwatches>
-						<LegendSwatch $bg="rgba(139, 92, 246, 0.08)" $hatched={true} />
-						<LegendSwatch $bg="rgba(139, 92, 246, 0.15)" $hatched={true} />
-						<LegendSwatch $bg="rgba(139, 92, 246, 0.25)" $hatched={false} />
-						<LegendSwatch $bg="rgba(139, 92, 246, 0.4)" $hatched={false} />
-						<LegendSwatch $bg="rgba(168, 85, 247, 0.6)" $hatched={false} />
-						<LegendSwatch $bg="rgba(168, 85, 247, 0.8)" $hatched={false} />
-						<LegendSwatch $bg="rgba(192, 132, 252, 0.95)" $hatched={false} />
+						{currencies.slice(0, 7).map((_, i) => {
+							const hex = CURRENCY_PALETTE[i % CURRENCY_PALETTE.length];
+							const [r, g, b] = hexToRgb(hex);
+							const opacity = 0.15 + (i / 6) * 0.8;
+							return <LegendSwatch key={i} $bg={`rgba(${r}, ${g}, ${b}, ${opacity.toFixed(2)})`} $hatched={i < 2} />;
+						})}
 					</LegendSwatches>
 					<LegendLabel>{maxChange.toFixed(1)}%</LegendLabel>
 				</LegendRow>

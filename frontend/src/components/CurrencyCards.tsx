@@ -162,14 +162,51 @@ const ChartBadge = styled.span<{ $active: boolean }>`
 	flex-shrink: 0;
 `;
 
+const SkeletonCard = styled(motion.div)`
+	background: ${({ theme }) => theme.colors.card};
+	border: 1px solid ${({ theme }) => theme.colors.border};
+	border-radius: ${({ theme }) => theme.borderRadius.md};
+	padding: ${({ theme }) => theme.spacing.md};
+	box-shadow: ${({ theme }) => theme.colors.shadowSm};
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	@media (max-width: 520px) {
+		padding: ${({ theme }) => theme.spacing.sm};
+	}
+`;
+
+const SkeletonBar = styled.div<{ $w: number; $h?: number }>`
+	width: ${({ $w }) => $w}px;
+	height: ${({ $h }) => $h || 14}px;
+	border-radius: 4px;
+	background: ${({ theme }) => theme.colors.border};
+	opacity: 0.5;
+	animation: shimmer 1.4s ease-in-out infinite;
+
+	@keyframes shimmer {
+		0%, 100% { opacity: 0.3; }
+		50% { opacity: 0.6; }
+	}
+`;
+
+const SkeletonRow = styled.div`
+	display: flex;
+	align-items: center;
+	gap: 8px;
+`;
+
 interface CurrencyCardsProps {
 	data?: HistoryResponse;
 	currencies: string[];
 	chartCurrencies: string[];
 	onToggleChart: (code: string) => void;
+	isLoading?: boolean;
 }
 
-const CurrencyCards = ({ data, currencies, chartCurrencies, onToggleChart }: CurrencyCardsProps) => {
+const CurrencyCards = ({ data, currencies, chartCurrencies, onToggleChart, isLoading }: CurrencyCardsProps) => {
 	const { t, i18n } = useTranslation();
 
 	const cardData = useMemo(() => {
@@ -183,7 +220,32 @@ const CurrencyCards = ({ data, currencies, chartCurrencies, onToggleChart }: Cur
 		});
 	}, [data, currencies]);
 
-	if (!cardData.length) return null;
+	if (isLoading || !cardData.length) {
+		const count = currencies.length || 5;
+		return (
+			<Section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+				<TitleRow>
+					<TitleBar />
+					<Title>{t('cards.title')}</Title>
+				</TitleRow>
+				<Grid>
+					{Array.from({ length: count }).map((_, i) => (
+						<SkeletonCard key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.04 * i }}>
+							<SkeletonRow>
+								<SkeletonBar $w={24} $h={24} style={{ borderRadius: 6 }} />
+								<SkeletonBar $w={36} $h={16} />
+								<div style={{ flex: 1 }} />
+								<SkeletonBar $w={60} $h={18} />
+							</SkeletonRow>
+							<SkeletonBar $w={90} $h={12} />
+							<SkeletonBar $w={120} $h={26} />
+							<SkeletonBar $w={70} $h={12} />
+						</SkeletonCard>
+					))}
+				</Grid>
+			</Section>
+		);
+	}
 
 	return (
 		<Section
@@ -212,7 +274,7 @@ const CurrencyCards = ({ data, currencies, chartCurrencies, onToggleChart }: Cur
 								<Flag>{CURRENCY_FLAGS[item.code] || '💰'}</Flag>
 								<Code>{item.code}</Code>
 								<ChartBadge $active={isOnChart}>
-									{isOnChart ? '✓ chart' : '+ chart'}
+									{isOnChart ? '✓ active' : '+ show'}
 								</ChartBadge>
 							</CardTop>
 							<Name>{getCurrencyName(item.code, i18n.language)}</Name>

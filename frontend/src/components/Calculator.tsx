@@ -8,6 +8,7 @@ import type { HistoryResponse } from '@/lib/api';
 import { CURRENCY_FLAGS, CURRENCY_SYMBOLS, getCurrencyName, matchesCurrencySearch, getCurrencyCategory, ALL_CATEGORIES, CATEGORY_LABELS_EN, CATEGORY_LABELS_RU, CATEGORY_LABELS_JA, CATEGORY_LABELS_ES, CATEGORY_ICONS, type CurrencyCategory } from '@/lib/currencies';
 import { useAppSettings } from '@/providers/Providers';
 import { useCurrenciesQuery } from '@/hooks/useRates';
+import { useRate } from '@/hooks/useRateStore';
 
 /* ── Panel ───────────────────────────────────── */
 
@@ -145,6 +146,13 @@ const AmountInput = styled.input`
 	letter-spacing: -0.03em;
 	outline: none;
 	min-width: 0;
+	-moz-appearance: textfield;
+
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
 
 	&::placeholder { color: ${({ theme }) => theme.colors.textMuted}; }
 	@media (max-width: 768px) { font-size: 32px; }
@@ -250,12 +258,39 @@ const DateButton = styled.button`
 	svg { width: 14px; height: 14px; }
 `;
 
-const HiddenDateInput = styled.input`
+const NativeDateInput = styled.input`
 	position: absolute;
+	inset: 0;
 	opacity: 0;
-	width: 0;
-	height: 0;
-	pointer-events: none;
+	width: 100%;
+	height: 100%;
+	cursor: pointer;
+	z-index: 1;
+	-webkit-appearance: none;
+	font-size: 16px; /* prevents iOS zoom on focus */
+`;
+
+const LoadingDots = styled.span`
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+
+	span {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: ${({ theme }) => theme.colors.accent};
+		opacity: 0.4;
+		animation: calcPulse 1.2s ease-in-out infinite;
+	}
+
+	span:nth-child(2) { animation-delay: 0.2s; }
+	span:nth-child(3) { animation-delay: 0.4s; }
+
+	@keyframes calcPulse {
+		0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+		40% { opacity: 1; transform: scale(1.1); }
+	}
 `;
 
 /* ── Currency dropdown ───────────────────────── */
@@ -375,7 +410,10 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 	const [amount, setAmount] = useState('1');
 	const [fromCurrency, setFromCurrency] = useState(baseCurrency);
 	const [toCurrency, setToCurrency] = useState(currencies[0] || 'EUR');
-	const [selectedDate, setSelectedDate] = useState<string>('');
+	const [selectedDate, setSelectedDate] = useState<string>(() => {
+		const d = new Date();
+		return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+	});
 	const [openDropdown, setOpenDropdown] = useState<'from' | 'to' | null>(null);
 	const [searchQuery, setSearchQuery] = useState('');
 	// Whether user has manually dragged the calc (decouples from cat)
@@ -475,12 +513,6 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 	}, []);
 
 	useEffect(() => {
-		if (data?.data?.length && !selectedDate) {
-			setSelectedDate(data.data[data.data.length - 1].date);
-		}
-	}, [data, selectedDate]);
-
-	useEffect(() => {
 		if (!openDropdown) return;
 		const handleClickOutside = (e: MouseEvent) => {
 			const ref = openDropdown === 'from' ? fromDropdownRef : toDropdownRef;
@@ -507,33 +539,13 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 		return Array.from(all);
 	}, [data, baseCurrency, currencies, apiCurrencies]);
 
-	const availableDates = useMemo(() => {
-		if (!data?.data?.length) return [];
-		return data.data.map((d) => d.date);
-	}, [data]);
+	const todayStr = useMemo(() => {
+		const d = new Date();
+		return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+	}, []);
 
-	const minDate = availableDates.length ? availableDates[0] : undefined;
-	const maxDate = availableDates.length ? availableDates[availableDates.length - 1] : undefined;
-
-	const selectedRates = useMemo(() => {
-		if (!data?.data?.length) return null;
-		if (!selectedDate) return data.data[data.data.length - 1].rates;
-		const entry = data.data.find((d) => d.date === selectedDate);
-		if (entry) return entry.rates;
-		for (let i = data.data.length - 1; i >= 0; i--) {
-			if (data.data[i].date <= selectedDate) return data.data[i].rates;
-		}
-		return data.data[data.data.length - 1].rates;
-	}, [data, selectedDate]);
-
-	const rate = useMemo(() => {
-		if (!selectedRates) return null;
-		if (fromCurrency === toCurrency) return 1;
-		if (fromCurrency === data?.base && selectedRates[toCurrency] != null) return selectedRates[toCurrency];
-		if (toCurrency === data?.base && selectedRates[fromCurrency] != null) return 1 / selectedRates[fromCurrency];
-		if (selectedRates[fromCurrency] != null && selectedRates[toCurrency] != null) return selectedRates[toCurrency] / selectedRates[fromCurrency];
-		return null;
-	}, [selectedRates, fromCurrency, toCurrency, data?.base]);
+	// Use centralized rate store
+	const { rate, isFetching: calcFetching } = useRate(fromCurrency, toCurrency, selectedDate, open);
 
 	const reverseRate = rate != null && rate !== 0 ? 1 / rate : null;
 
@@ -619,7 +631,6 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 
 	const handleDateClick = () => {
 		hiddenDateRef.current?.showPicker?.();
-		hiddenDateRef.current?.click();
 	};
 
 	const renderDropdown = (which: 'from' | 'to') => {
@@ -712,9 +723,8 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 							</HeaderRow>
 						</Header>
 
-						{availableDates.length > 1 && (
-							<DateRow>
-								<DateButton onClick={handleDateClick}>
+						<DateRow>
+								<DateButton style={{ position: 'relative' }} onClick={handleDateClick}>
 									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 										<rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
 										<line x1="16" y1="2" x2="16" y2="6" />
@@ -722,17 +732,15 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 										<line x1="3" y1="10" x2="21" y2="10" />
 									</svg>
 									{formatSelectedDate(selectedDate)}
+									<NativeDateInput
+										ref={hiddenDateRef}
+										type="date"
+										value={selectedDate}
+										max={todayStr}
+										onChange={(e) => setSelectedDate(e.target.value)}
+									/>
 								</DateButton>
-								<HiddenDateInput
-									ref={hiddenDateRef}
-									type="date"
-									value={selectedDate}
-									min={minDate}
-									max={maxDate}
-									onChange={(e) => setSelectedDate(e.target.value)}
-								/>
 							</DateRow>
-						)}
 
 						<AmountBlock $active>
 							<AmountRow>
@@ -747,17 +755,23 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 									autoFocus
 								/>
 							</AmountRow>
-							{rate != null && (
+							{calcFetching ? (
+								<RateHint>{t('calc.loading', 'Loading rate...')}</RateHint>
+							) : rate != null ? (
 								<RateHint>1 {fromCurrency} = {fmtShort(rate)} {toCurrency}</RateHint>
-							)}
+							) : null}
 						</AmountBlock>
 
 						<AmountBlock>
 							<AmountRow>
 								{toSymbol && <AmountSymbol>{toSymbol}</AmountSymbol>}
-								<AmountDisplay>{result != null ? fmt(result) : '—'}</AmountDisplay>
+								{calcFetching ? (
+									<AmountDisplay><LoadingDots><span /><span /><span /></LoadingDots></AmountDisplay>
+								) : (
+									<AmountDisplay>{result != null ? fmt(result) : '—'}</AmountDisplay>
+								)}
 							</AmountRow>
-							{reverseRate != null && (
+							{!calcFetching && reverseRate != null && (
 								<RateHint>1 {toCurrency} = {fmtShort(reverseRate)} {fromCurrency}</RateHint>
 							)}
 						</AmountBlock>

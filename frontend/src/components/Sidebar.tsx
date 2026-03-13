@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { useAppSettings } from '@/providers/Providers';
+import { useAppSettings, type ViewMode } from '@/providers/Providers';
 import { useHealthQuery, useCurrenciesQuery } from '@/hooks/useRates';
 import { CURRENCY_FLAGS, getCurrencyName, matchesCurrencySearch, getCurrencyCategory, ALL_CATEGORIES, CATEGORY_LABELS_EN, CATEGORY_LABELS_RU, CATEGORY_LABELS_JA, CATEGORY_LABELS_ES, CATEGORY_ICONS, type CurrencyCategory } from '@/lib/currencies';
 import { format, subWeeks, subMonths, subYears } from 'date-fns';
@@ -89,7 +89,10 @@ const LogoIcon = styled.div`
 	width: 36px;
 	height: 36px;
 	border-radius: 10px;
-	background: linear-gradient(135deg, ${({ theme }) => theme.colors.gradientStart}, ${({ theme }) => theme.colors.gradientEnd});
+	background: ${({ theme }) =>
+		theme.name === 'light'
+			? 'linear-gradient(135deg, #E40303, #FF8C00, #FFED00, #008026, #004DFF, #750787)'
+			: `linear-gradient(135deg, ${theme.colors.gradientStart}, ${theme.colors.gradientEnd})`};
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -119,12 +122,18 @@ const LogoSub = styled.span`
 	gap: 6px;
 `;
 
-const HealthDot = styled.div<{ $online: boolean }>`
+const HealthDot = styled.div<{ $status: 'online' | 'offline' | 'connecting' }>`
 	width: 6px;
 	height: 6px;
 	border-radius: 50%;
-	background: ${({ $online, theme }) => ($online ? theme.colors.success : theme.colors.danger)};
-	box-shadow: 0 0 6px ${({ $online, theme }) => ($online ? theme.colors.success + '80' : theme.colors.danger + '80')};
+	background: ${({ $status, theme }) =>
+		$status === 'online' ? theme.colors.success
+		: $status === 'connecting' ? theme.colors.warning
+		: theme.colors.danger};
+	box-shadow: 0 0 6px ${({ $status, theme }) =>
+		($status === 'online' ? theme.colors.success
+		: $status === 'connecting' ? theme.colors.warning
+		: theme.colors.danger) + '80'};
 `;
 
 /* ── Base currency ─────────────────────── */
@@ -209,6 +218,20 @@ const Dropdown = styled(motion.div)`
 	border-radius: 10px;
 	box-shadow: ${({ theme }) => theme.colors.shadowLg};
 	z-index: 200;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+`;
+
+const FixedDropdown = styled(motion.div)`
+	position: fixed;
+	width: 244px;
+	max-height: 280px;
+	background: ${({ theme }) => theme.colors.card};
+	border: 1px solid ${({ theme }) => theme.colors.border};
+	border-radius: 10px;
+	box-shadow: ${({ theme }) => theme.colors.shadowLg};
+	z-index: 9999;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -608,24 +631,54 @@ const SidebarContent = ({
 	onNavClick: (id: string) => void;
 }) => {
 	const { t, i18n } = useTranslation();
-	const { settings, setSettings, calcOpen, setCalcOpen } = useAppSettings();
-	const { data: health } = useHealthQuery();
+	const { settings, setSettings, calcOpen, setCalcOpen, viewMode, setViewMode } = useAppSettings();
+	const { data: health, isLoading: healthLoading, isError: healthError } = useHealthQuery();
 	const { data: apiCurrencies } = useCurrenciesQuery();
 
 	// Base currency dropdown
 	const [baseOpen, setBaseOpen] = useState(false);
 	const [baseSearch, setBaseSearch] = useState('');
+	const [basePos, setBasePos] = useState<{ top: number; left: number } | null>(null);
 	const baseRef = useRef<HTMLDivElement>(null);
+	const baseBtnRef = useRef<HTMLButtonElement>(null);
+	const baseDropRef = useRef<HTMLDivElement>(null);
 	const baseSearchRef = useRef<HTMLInputElement>(null);
 
 	// Add currency dropdown
 	const [addOpen, setAddOpen] = useState(false);
 	const [addSearch, setAddSearch] = useState('');
+	const [addPos, setAddPos] = useState<{ top: number; left: number } | null>(null);
 	const addRef = useRef<HTMLDivElement>(null);
+	const addBtnRef = useRef<HTMLButtonElement>(null);
+	const addDropRef = useRef<HTMLDivElement>(null);
 	const addSearchRef = useRef<HTMLInputElement>(null);
 
-	useClickOutside(baseRef, useCallback(() => { setBaseOpen(false); setBaseSearch(''); }, []));
-	useClickOutside(addRef, useCallback(() => { setAddOpen(false); setAddSearch(''); }, []));
+	// Close base dropdown when clicking outside both the button and the dropdown
+	useEffect(() => {
+		if (!baseOpen) return;
+		const listener = (e: MouseEvent | TouchEvent) => {
+			const target = e.target as Node;
+			if (baseRef.current?.contains(target)) return;
+			if (baseDropRef.current?.contains(target)) return;
+			setBaseOpen(false);
+			setBaseSearch('');
+		};
+		document.addEventListener('mousedown', listener);
+		return () => document.removeEventListener('mousedown', listener);
+	}, [baseOpen]);
+	// Close add dropdown when clicking outside both the button and the dropdown
+	useEffect(() => {
+		if (!addOpen) return;
+		const listener = (e: MouseEvent | TouchEvent) => {
+			const target = e.target as Node;
+			if (addRef.current?.contains(target)) return;
+			if (addDropRef.current?.contains(target)) return;
+			setAddOpen(false);
+			setAddSearch('');
+		};
+		document.addEventListener('mousedown', listener);
+		return () => document.removeEventListener('mousedown', listener);
+	}, [addOpen]);
 	useEffect(() => { if (baseOpen) setTimeout(() => baseSearchRef.current?.focus(), 0); }, [baseOpen]);
 	useEffect(() => { if (addOpen) setTimeout(() => addSearchRef.current?.focus(), 0); }, [addOpen]);
 
@@ -666,7 +719,7 @@ const SidebarContent = ({
 	};
 
 	const addCurrency = (code: string) => {
-		if (!settings.selectedCurrencies.includes(code)) {
+		if (!settings.selectedCurrencies.includes(code) && settings.selectedCurrencies.length < 6) {
 			setSettings({ selectedCurrencies: [...settings.selectedCurrencies, code] });
 		}
 		setAddOpen(false);
@@ -720,12 +773,27 @@ const SidebarContent = ({
 	return (
 		<>
 			<LogoArea>
-				<LogoIcon>🦈</LogoIcon>
+				<LogoIcon>
+					<svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+						<path d="M3 10 Q1 7 2 4 L5 9 Z" fill="#5B8FA1" />
+						<path d="M3 18 Q1 21 2 24 L5 19 Z" fill="#5B8FA1" />
+						<path d="M5 8 Q10 3 20 5 Q28 7 30 14 Q30 21 22 24 Q14 26 8 22 Q3 18 5 8 Z" fill="#6B9DAF" />
+						<path d="M10 14 Q14 10 22 12 Q27 14 27 18 Q24 23 16 24 Q10 23 8 19 Q7 16 10 14 Z" fill="#EDF2F7" />
+						<path d="M14 5 L12 9 L17 8 Z" fill="#5B8FA1" />
+						<path d="M16 20 Q14 25 12 26 Q13 23 14 21 Z" fill="#5B8FA1" />
+						<circle cx="24" cy="13" r="3" fill="#2D3748" />
+						<circle cx="25" cy="12" r="1" fill="white" />
+						<path d="M26 18 L27.5 17 L29 18.5 L30 17" stroke="#2D3748" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
+				</LogoIcon>
 				<LogoTextWrap>
 					<LogoName>Sharkie</LogoName>
 					<LogoSub>
-						<HealthDot $online={health?.status === 'ok'} title={health?.status === 'ok' ? t('health.online') : t('health.offline')} />
-						{health?.status === 'ok' ? t('health.online') : t('health.offline')}
+						{(() => {
+							const status = healthLoading ? 'connecting' : health?.status === 'ok' ? 'online' : healthError ? 'offline' : 'connecting';
+							const label = status === 'online' ? t('health.online') : status === 'offline' ? t('health.offline') : t('health.checking');
+							return <><HealthDot $status={status} title={label} />{label}</>;
+						})()}
 					</LogoSub>
 				</LogoTextWrap>
 			</LogoArea>
@@ -734,8 +802,14 @@ const SidebarContent = ({
 			<ScrollArea>
 		<WidgetArea>
 				<WidgetLabel>{t('controls.base')}</WidgetLabel>
-				<DropArea ref={baseRef}>
-					<BaseButton onClick={() => setBaseOpen((v) => !v)}>
+				<div ref={baseRef}>
+					<BaseButton ref={baseBtnRef} onClick={() => {
+						if (!baseOpen && baseBtnRef.current) {
+							const rect = baseBtnRef.current.getBoundingClientRect();
+							setBasePos({ top: rect.bottom + 4, left: rect.left });
+						}
+						setBaseOpen((v) => !v);
+					}}>
 						<BaseFlag>{CURRENCY_FLAGS[settings.baseCurrency] || ''}</BaseFlag>
 						<BaseInfo>
 							<BaseCode>{settings.baseCurrency}</BaseCode>
@@ -747,40 +821,7 @@ const SidebarContent = ({
 							</svg>
 						</Chevron>
 					</BaseButton>
-					<AnimatePresence>
-						{baseOpen && (
-							<Dropdown
-								initial={{ opacity: 0, y: -6 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: -6 }}
-								transition={{ duration: 0.12 }}
-							>
-								<DSearch
-									ref={baseSearchRef}
-									type="text"
-									placeholder={i18n.language === 'ru' ? 'Поиск валюты...' : 'Search currency...'}
-									value={baseSearch}
-									onChange={(e) => setBaseSearch(e.target.value)}
-									onClick={(e) => e.stopPropagation()}
-								/>
-								<DList>
-									{baseFiltered.map((group) => (
-										<React.Fragment key={group.cat}>
-											<DCatLabel>{group.icon} {group.label}</DCatLabel>
-											{group.items.map((c) => (
-												<DItem key={c} $selected={c === settings.baseCurrency} onClick={() => selectBase(c)}>
-													<DFlag>{CURRENCY_FLAGS[c] || ''}</DFlag>
-													<DCode>{c}</DCode>
-													<DName>{getCurrencyName(c, i18n.language)}</DName>
-												</DItem>
-											))}
-										</React.Fragment>
-									))}
-								</DList>
-							</Dropdown>
-						)}
-					</AnimatePresence>
-				</DropArea>
+				</div>
 
 				<WidgetLabel style={{ marginTop: 6 }}>{t('controls.from')}</WidgetLabel>
 				<PillsRow>
@@ -805,41 +846,15 @@ const SidebarContent = ({
 							<ChipRemove onClick={() => removeCurrency(code)}>&times;</ChipRemove>
 						</CurrChip>
 					))}
-					<DropArea ref={addRef}>
-						<AddChipBtn onClick={() => setAddOpen((v) => !v)}>+ {t('controls.addCurrency')}</AddChipBtn>
-						<AnimatePresence>
-							{addOpen && (
-								<Dropdown
-									initial={{ opacity: 0, y: -6 }}
-									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: -6 }}
-									transition={{ duration: 0.12 }}
-								>
-									<DSearch
-										ref={addSearchRef}
-										type="text"
-										placeholder={i18n.language === 'ru' ? 'Поиск валюты...' : 'Search currency...'}
-										value={addSearch}
-										onChange={(e) => setAddSearch(e.target.value)}
-									/>
-									<DList>
-										{addFiltered.map((group) => (
-											<React.Fragment key={group.cat}>
-												<DCatLabel>{group.icon} {group.label}</DCatLabel>
-												{group.items.map((c) => (
-													<DItem key={c} onClick={() => addCurrency(c)}>
-														<DFlag>{CURRENCY_FLAGS[c] || ''}</DFlag>
-														<DCode>{c}</DCode>
-														<DName>{getCurrencyName(c, i18n.language)}</DName>
-													</DItem>
-												))}
-											</React.Fragment>
-										))}
-									</DList>
-								</Dropdown>
-							)}
-						</AnimatePresence>
-					</DropArea>
+					{settings.selectedCurrencies.length < 6 && <div ref={addRef} style={{ position: 'relative' }}>
+						<AddChipBtn ref={addBtnRef} onClick={() => {
+							if (!addOpen && addBtnRef.current) {
+								const rect = addBtnRef.current.getBoundingClientRect();
+								setAddPos({ top: rect.bottom + 4, left: rect.left });
+							}
+							setAddOpen((v) => !v);
+						}}>+ {t('controls.addCurrency')}</AddChipBtn>
+					</div>}
 				</ChipsWrap>
 			</WidgetArea>
 
@@ -857,23 +872,43 @@ const SidebarContent = ({
 				))}
 			</NavWrap>
 
-			<CalcButton $open={calcOpen} onClick={() => setCalcOpen((v: boolean) => !v)}>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-					<rect x="4" y="2" width="16" height="20" rx="2" />
-					<line x1="8" y1="6" x2="16" y2="6" />
-					<line x1="8" y1="14" x2="8" y2="14.01" />
-					<line x1="12" y1="14" x2="12" y2="14.01" />
-					<line x1="16" y1="14" x2="16" y2="14.01" />
-					<line x1="8" y1="18" x2="8" y2="18.01" />
-					<line x1="12" y1="18" x2="12" y2="18.01" />
-					<line x1="16" y1="18" x2="16" y2="18.01" />
-					<line x1="8" y1="10" x2="16" y2="10" />
-				</svg>
-				{t('sidebar.calculator')}
-			</CalcButton>
 		</ScrollArea>
 
 			<BottomArea>
+				<SettingsRow style={{ marginBottom: 6 }}>
+					{viewMode === 'dashboard' && (
+						<ToggleBtn
+							$active={calcOpen}
+							onClick={() => setCalcOpen((v: boolean) => !v)}
+						>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<rect x="4" y="2" width="16" height="20" rx="2" />
+								<line x1="8" y1="6" x2="16" y2="6" />
+								<line x1="8" y1="10" x2="16" y2="10" />
+								<line x1="8" y1="14" x2="8" y2="14.01" />
+								<line x1="12" y1="14" x2="12" y2="14.01" />
+								<line x1="16" y1="14" x2="16" y2="14.01" />
+							</svg>
+						</ToggleBtn>
+					)}
+					<ToggleBtn
+						$active={viewMode === 'calculator'}
+						onClick={() => setViewMode(viewMode === 'dashboard' ? 'calculator' : 'dashboard')}
+					>
+						{viewMode === 'calculator' ? (
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+								<line x1="1" y1="10" x2="23" y2="10" />
+							</svg>
+						) : (
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+								<polyline points="17 6 23 6 23 12" />
+							</svg>
+						)}
+						{viewMode === 'calculator' ? t('sidebar.dashboard') : t('sidebar.calcMode', 'Calc Mode')}
+					</ToggleBtn>
+				</SettingsRow>
 				<SettingsRow>
 					<ToggleBtn onClick={toggleTheme} $active={isDark}>
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -893,6 +928,75 @@ const SidebarContent = ({
 					</ToggleBtn>
 				</SettingsRow>
 			</BottomArea>
+			<AnimatePresence>
+				{baseOpen && basePos && (
+					<FixedDropdown
+						ref={baseDropRef}
+						initial={{ opacity: 0, y: -6 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: -6 }}
+						transition={{ duration: 0.12 }}
+						style={{ top: basePos.top, left: basePos.left }}
+					>
+						<DSearch
+							ref={baseSearchRef}
+							type="text"
+							placeholder={i18n.language === 'ru' ? 'Поиск валюты...' : 'Search currency...'}
+							value={baseSearch}
+							onChange={(e) => setBaseSearch(e.target.value)}
+							onClick={(e) => e.stopPropagation()}
+						/>
+						<DList>
+							{baseFiltered.map((group) => (
+								<React.Fragment key={group.cat}>
+									<DCatLabel>{group.icon} {group.label}</DCatLabel>
+									{group.items.map((c) => (
+										<DItem key={c} $selected={c === settings.baseCurrency} onClick={() => selectBase(c)}>
+											<DFlag>{CURRENCY_FLAGS[c] || ''}</DFlag>
+											<DCode>{c}</DCode>
+											<DName>{getCurrencyName(c, i18n.language)}</DName>
+										</DItem>
+									))}
+								</React.Fragment>
+							))}
+						</DList>
+					</FixedDropdown>
+				)}
+			</AnimatePresence>
+			<AnimatePresence>
+				{addOpen && addPos && (
+					<FixedDropdown
+						ref={addDropRef}
+						initial={{ opacity: 0, y: -6 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: -6 }}
+						transition={{ duration: 0.12 }}
+						style={{ top: addPos.top, left: addPos.left }}
+					>
+						<DSearch
+							ref={addSearchRef}
+							type="text"
+							placeholder={i18n.language === 'ru' ? 'Поиск валюты...' : 'Search currency...'}
+							value={addSearch}
+							onChange={(e) => setAddSearch(e.target.value)}
+						/>
+						<DList>
+							{addFiltered.map((group) => (
+								<React.Fragment key={group.cat}>
+									<DCatLabel>{group.icon} {group.label}</DCatLabel>
+									{group.items.map((c) => (
+										<DItem key={c} onClick={() => addCurrency(c)}>
+											<DFlag>{CURRENCY_FLAGS[c] || ''}</DFlag>
+											<DCode>{c}</DCode>
+											<DName>{getCurrencyName(c, i18n.language)}</DName>
+										</DItem>
+									))}
+								</React.Fragment>
+							))}
+						</DList>
+					</FixedDropdown>
+				)}
+			</AnimatePresence>
 		</>
 	);
 };
