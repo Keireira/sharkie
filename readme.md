@@ -9,8 +9,8 @@ Currency exchange rates API with historical data from 2000 to present.
 ## To-Do
 
 - [ ] Add support of other base currencies (recalc on the fly)
-- [ ] Add range with `from` and `to` to the `/history` endpoint
-- [ ] Automatically upload sql dumps of `exchange_rates` table to some external resource
+- [*] Add range with `from` and `to` to the `/history` endpoint
+- [*] Automatically upload sql dumps of `exchange_rates` table to some external resource
 - [ ] Some stub for the index page?
 - [ ] Requests limiter
 - [ ] Refactor that shitcode

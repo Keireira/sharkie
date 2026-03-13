@@ -14,7 +14,12 @@ use tokio::net::TcpListener;
 
 #[derive(Debug, Deserialize)]
 struct HistoryQuery {
-    date: String,
+    #[serde(default)]
+    date: Option<String>,
+    #[serde(default)]
+    from: Option<String>,
+    #[serde(default)]
+    to: Option<String>,
     #[serde(default)]
     currencies: Option<String>,
 }
@@ -100,22 +105,45 @@ async fn get_history(
     State(state): State<AppState>,
     Query(query): Query<HistoryQuery>,
 ) -> Result<Json<HistoryResponse>, ApiError> {
-    // Parse dates
-    let dates: Vec<NaiveDate> = query
-        .date
-        .split(',')
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-        .map(|s| {
-            NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|_| {
-                ApiError::InvalidInput(format!("Invalid date format: '{}'. Use YYYY-MM-DD", s))
-            })
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-
-    if dates.is_empty() {
-        return Err(ApiError::InvalidInput("No dates provided".to_string()));
+    // Parse dates: either `from`+`to` range or comma-separated `date`
+    enum DateFilter {
+        Range(NaiveDate, NaiveDate),
+        List(Vec<NaiveDate>),
     }
+
+    let date_filter = if let (Some(from), Some(to)) = (&query.from, &query.to) {
+        let from_date = NaiveDate::parse_from_str(from, "%Y-%m-%d")
+            .map_err(|_| ApiError::InvalidInput(format!("Invalid 'from' date: '{}'. Use YYYY-MM-DD", from)))?;
+        let to_date = NaiveDate::parse_from_str(to, "%Y-%m-%d")
+            .map_err(|_| ApiError::InvalidInput(format!("Invalid 'to' date: '{}'. Use YYYY-MM-DD", to)))?;
+
+        if from_date > to_date {
+            return Err(ApiError::InvalidInput("'from' must be before 'to'".to_string()));
+        }
+
+        DateFilter::Range(from_date, to_date)
+    } else if let Some(ref date) = query.date {
+        let dates: Vec<NaiveDate> = date
+            .split(',')
+            .map(|s| s.trim())
+            .filter(|s| !s.is_empty())
+            .map(|s| {
+                NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|_| {
+                    ApiError::InvalidInput(format!("Invalid date format: '{}'. Use YYYY-MM-DD", s))
+                })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        if dates.is_empty() {
+            return Err(ApiError::InvalidInput("No dates provided".to_string()));
+        }
+
+        DateFilter::List(dates)
+    } else {
+        return Err(ApiError::InvalidInput(
+            "Provide 'date' or 'from'+'to' parameters".to_string(),
+        ));
+    };
 
     // Parse currencies filter
     let currency_filter: Option<Vec<String>> = query.currencies.map(|c| {
@@ -125,51 +153,94 @@ async fn get_history(
             .collect()
     });
 
-    // Build query with date placeholders
-    let date_placeholders: Vec<String> = (1..=dates.len()).map(|i| format!("${}", i)).collect();
-
-    let rates: Vec<ExchangeRate> = if let Some(ref currencies) = currency_filter {
-        if currencies.is_empty() {
+    if let Some(ref c) = currency_filter {
+        if c.is_empty() {
             return Err(ApiError::InvalidInput("Empty currencies list".to_string()));
         }
+    }
 
-        let currency_placeholders: Vec<String> = (dates.len() + 1..=dates.len() + currencies.len())
-            .map(|i| format!("${}", i))
-            .collect();
+    // Build and execute query
+    let rates: Vec<ExchangeRate> = match &date_filter {
+        DateFilter::Range(from, to) => {
+            let date_clause = "date BETWEEN $1 AND $2";
+            let param_offset = 2;
 
-        let sql = format!(
-            "SELECT currency_code, date, rate FROM exchange_rates
-             WHERE date IN ({}) AND currency_code IN ({})
-             ORDER BY date, currency_code",
-            date_placeholders.join(", "),
-            currency_placeholders.join(", ")
-        );
+            if let Some(ref currencies) = currency_filter {
+                let currency_placeholders: Vec<String> = (1..=currencies.len())
+                    .map(|i| format!("${}", param_offset + i))
+                    .collect();
 
-        let mut q = sqlx::query_as::<_, ExchangeRate>(&sql);
-        for date in &dates {
-            q = q.bind(date);
+                let sql = format!(
+                    "SELECT currency_code, date, rate FROM exchange_rates
+                     WHERE {} AND currency_code IN ({})
+                     ORDER BY date, currency_code",
+                    date_clause,
+                    currency_placeholders.join(", ")
+                );
+
+                let mut q = sqlx::query_as::<_, ExchangeRate>(&sql)
+                    .bind(from)
+                    .bind(to);
+                for currency in currencies {
+                    q = q.bind(currency);
+                }
+                q.fetch_all(&state.db).await.map_err(|_| ApiError::InternalServerError)?
+            } else {
+                let sql = format!(
+                    "SELECT currency_code, date, rate FROM exchange_rates
+                     WHERE {}
+                     ORDER BY date, currency_code",
+                    date_clause
+                );
+
+                sqlx::query_as::<_, ExchangeRate>(&sql)
+                    .bind(from)
+                    .bind(to)
+                    .fetch_all(&state.db)
+                    .await
+                    .map_err(|_| ApiError::InternalServerError)?
+            }
         }
-        for currency in currencies {
-            q = q.bind(currency);
-        }
-        q.fetch_all(&state.db)
-            .await
-            .map_err(|_| ApiError::InternalServerError)?
-    } else {
-        let sql = format!(
-            "SELECT currency_code, date, rate FROM exchange_rates
-             WHERE date IN ({})
-             ORDER BY date, currency_code",
-            date_placeholders.join(", ")
-        );
+        DateFilter::List(dates) => {
+            let date_placeholders: Vec<String> =
+                (1..=dates.len()).map(|i| format!("${}", i)).collect();
 
-        let mut q = sqlx::query_as::<_, ExchangeRate>(&sql);
-        for date in &dates {
-            q = q.bind(date);
+            if let Some(ref currencies) = currency_filter {
+                let currency_placeholders: Vec<String> = (dates.len() + 1..=dates.len() + currencies.len())
+                    .map(|i| format!("${}", i))
+                    .collect();
+
+                let sql = format!(
+                    "SELECT currency_code, date, rate FROM exchange_rates
+                     WHERE date IN ({}) AND currency_code IN ({})
+                     ORDER BY date, currency_code",
+                    date_placeholders.join(", "),
+                    currency_placeholders.join(", ")
+                );
+
+                let mut q = sqlx::query_as::<_, ExchangeRate>(&sql);
+                for date in dates {
+                    q = q.bind(date);
+                }
+                for currency in currencies {
+                    q = q.bind(currency);
+                }
+                q.fetch_all(&state.db).await.map_err(|_| ApiError::InternalServerError)?
+            } else {
+                let sql = format!(
+                    "SELECT currency_code, date, rate FROM exchange_rates
+                     WHERE date IN ({})
+                     ORDER BY date, currency_code",
+                    date_placeholders.join(", ")
+                );
+
+                let mut q = sqlx::query_as::<_, ExchangeRate>(&sql);
+                for date in dates {
+                    q = q.bind(date);
+                }
+                q.fetch_all(&state.db).await.map_err(|_| ApiError::InternalServerError)?
+            }
         }
-        q.fetch_all(&state.db)
-            .await
-            .map_err(|_| ApiError::InternalServerError)?
     };
 
     if rates.is_empty() {
@@ -393,6 +464,22 @@ fn seconds_until_next_fetch() -> u64 {
 }
 
 async fn daily_rate_updater(pool: PgPool) {
+    // Fetch on startup only if today's data is missing
+    let today = Utc::now().date_naive();
+    let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM exchange_rates WHERE date = $1")
+        .bind(today)
+        .fetch_one(&pool)
+        .await
+        .unwrap_or((0,));
+
+    if count.0 == 0 {
+        if let Err(e) = fetch_today_rates(&pool).await {
+            eprintln!("Failed to fetch today's rates: {}", e);
+        }
+    } else {
+        println!("Today's rates ({}) already exist, skipping startup fetch", today);
+    }
+
     loop {
         let wait = seconds_until_next_fetch();
         let hours = wait / 3600;
