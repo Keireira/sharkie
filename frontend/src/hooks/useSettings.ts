@@ -27,7 +27,7 @@ const defaultSettings: Settings = {
 	customTo: ''
 };
 
-function loadSettings(): Settings {
+const loadSettings = (): Settings => {
 	if (typeof window === 'undefined') return defaultSettings;
 	try {
 		const stored = localStorage.getItem(STORAGE_KEY);
@@ -43,9 +43,9 @@ function loadSettings(): Settings {
 		// ignore
 	}
 	return defaultSettings;
-}
+};
 
-export function useSettings() {
+export const useSettings = () => {
 	const [settings, setSettingsState] = useState<Settings>(defaultSettings);
 	const [isLoaded, setIsLoaded] = useState(false);
 
@@ -67,4 +67,4 @@ export function useSettings() {
 	}, []);
 
 	return { settings, setSettings, isLoaded };
-}
+};

@@ -3,9 +3,21 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { useAppSettings, type ViewMode } from '@/providers/Providers';
+import { useAppSettings } from '@/providers/Providers';
 import { useHealthQuery, useCurrenciesQuery } from '@/hooks/useRates';
-import { CURRENCY_FLAGS, getCurrencyName, matchesCurrencySearch, getCurrencyCategory, ALL_CATEGORIES, CATEGORY_LABELS_EN, CATEGORY_LABELS_RU, CATEGORY_LABELS_JA, CATEGORY_LABELS_ES, CATEGORY_ICONS, type CurrencyCategory } from '@/lib/currencies';
+import {
+	CURRENCY_FLAGS,
+	getCurrencyName,
+	matchesCurrencySearch,
+	getCurrencyCategory,
+	ALL_CATEGORIES,
+	CATEGORY_LABELS_EN,
+	CATEGORY_LABELS_RU,
+	CATEGORY_LABELS_JA,
+	CATEGORY_LABELS_ES,
+	CATEGORY_ICONS,
+	type CurrencyCategory
+} from '@/lib/currencies';
 import { format, subWeeks, subMonths, subYears } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -127,13 +139,18 @@ const HealthDot = styled.div<{ $status: 'online' | 'offline' | 'connecting' }>`
 	height: 6px;
 	border-radius: 50%;
 	background: ${({ $status, theme }) =>
-		$status === 'online' ? theme.colors.success
-		: $status === 'connecting' ? theme.colors.warning
-		: theme.colors.danger};
-	box-shadow: 0 0 6px ${({ $status, theme }) =>
-		($status === 'online' ? theme.colors.success
-		: $status === 'connecting' ? theme.colors.warning
-		: theme.colors.danger) + '80'};
+		$status === 'online'
+			? theme.colors.success
+			: $status === 'connecting'
+				? theme.colors.warning
+				: theme.colors.danger};
+	box-shadow: 0 0 6px
+		${({ $status, theme }) =>
+			($status === 'online'
+				? theme.colors.success
+				: $status === 'connecting'
+					? theme.colors.warning
+					: theme.colors.danger) + '80'};
 `;
 
 /* ── Base currency ─────────────────────── */
@@ -202,27 +219,6 @@ const Chevron = styled.span`
 	color: ${({ theme }) => theme.colors.textMuted};
 `;
 
-const DropArea = styled.div`
-	position: relative;
-	z-index: 100;
-`;
-
-const Dropdown = styled(motion.div)`
-	position: absolute;
-	top: calc(100% + 4px);
-	left: 0;
-	width: 260px;
-	max-height: 280px;
-	background: ${({ theme }) => theme.colors.card};
-	border: 1px solid ${({ theme }) => theme.colors.border};
-	border-radius: 10px;
-	box-shadow: ${({ theme }) => theme.colors.shadowLg};
-	z-index: 200;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-`;
-
 const FixedDropdown = styled(motion.div)`
 	position: fixed;
 	width: 244px;
@@ -246,7 +242,9 @@ const DSearch = styled.input`
 	font-size: 13px;
 	outline: none;
 	font-family: inherit;
-	&::placeholder { color: ${({ theme }) => theme.colors.textMuted}; }
+	&::placeholder {
+		color: ${({ theme }) => theme.colors.textMuted};
+	}
 `;
 
 const DList = styled.div`
@@ -269,7 +267,9 @@ const DItem = styled.button<{ $selected?: boolean }>`
 	cursor: pointer;
 	text-align: left;
 	transition: background 0.1s;
-	&:hover { background: ${({ theme }) => theme.colors.bgSecondary}; }
+	&:hover {
+		background: ${({ theme }) => theme.colors.bgSecondary};
+	}
 `;
 
 const DFlag = styled.span`
@@ -288,12 +288,6 @@ const DName = styled.span`
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	font-size: 11px;
-`;
-
-const DSep = styled.div`
-	height: 1px;
-	background: ${({ theme }) => theme.colors.border};
-	margin: 3px 10px;
 `;
 
 const DCatLabel = styled.div`
@@ -441,9 +435,11 @@ const ScrollArea = styled.div`
 	overflow-y: auto;
 	min-height: 0;
 	scrollbar-width: thin;
-	&::-webkit-scrollbar { width: 4px; }
+	&::-webkit-scrollbar {
+		width: 4px;
+	}
 	&::-webkit-scrollbar-thumb {
-		background: rgba(128,128,128,0.3);
+		background: rgba(128, 128, 128, 0.3);
 		border-radius: 2px;
 	}
 `;
@@ -515,31 +511,6 @@ const NavItem = styled.button<{ $active: boolean }>`
 	}
 `;
 
-const CalcButton = styled.button<{ $open?: boolean }>`
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	width: calc(100% - 32px);
-	margin: 0 16px 12px;
-	padding: 10px 14px;
-	border: 1px solid ${({ $open, theme }) => $open ? theme.colors.accent : theme.colors.border};
-	border-radius: 10px;
-	background: ${({ $open, theme }) => $open ? theme.colors.accentGlow : theme.colors.bgSecondary};
-	color: ${({ $open, theme }) => $open ? theme.colors.accent : theme.colors.text};
-	cursor: pointer;
-	font-size: 13px;
-	font-weight: 600;
-	text-align: left;
-	transition: all 0.15s ease;
-
-	&:hover {
-		border-color: ${({ theme }) => theme.colors.accent};
-		color: ${({ theme }) => theme.colors.accent};
-	}
-
-	svg { flex-shrink: 0; width: 16px; height: 16px; }
-`;
-
 /* ── Bottom area ─────────────────────────────── */
 
 const BottomArea = styled.div`
@@ -572,64 +543,119 @@ const ToggleBtn = styled.button<{ $active?: boolean }>`
 		border-color: ${({ theme }) => theme.colors.borderHover};
 		color: ${({ theme }) => theme.colors.text};
 	}
-	svg { width: 14px; height: 14px; }
+	svg {
+		width: 14px;
+		height: 14px;
+	}
 `;
 
 /* ── Icons ─────────────────────────────── */
 
 const NavIcon = ({ id }: { id: string }) => {
 	const props = {
-		width: 18, height: 18, fill: 'none', stroke: 'currentColor',
-		strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const
+		width: 18,
+		height: 18,
+		fill: 'none',
+		stroke: 'currentColor',
+		strokeWidth: 1.8,
+		strokeLinecap: 'round' as const,
+		strokeLinejoin: 'round' as const
 	};
 	switch (id) {
 		case 'controls':
-			return (<svg {...props} viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<line x1="4" y1="21" x2="4" y2="14" />
+					<line x1="4" y1="10" x2="4" y2="3" />
+					<line x1="12" y1="21" x2="12" y2="12" />
+					<line x1="12" y1="8" x2="12" y2="3" />
+					<line x1="20" y1="21" x2="20" y2="16" />
+					<line x1="20" y1="12" x2="20" y2="3" />
+					<line x1="1" y1="14" x2="7" y2="14" />
+					<line x1="9" y1="8" x2="15" y2="8" />
+					<line x1="17" y1="16" x2="23" y2="16" />
+				</svg>
+			);
 		case 'chart':
-			return (<svg {...props} viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+					<polyline points="17 6 23 6 23 12" />
+				</svg>
+			);
 		case 'cards':
-			return (<svg {...props} viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+					<line x1="1" y1="10" x2="23" y2="10" />
+				</svg>
+			);
 		case 'map':
-			return (<svg {...props} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<circle cx="12" cy="12" r="10" />
+					<line x1="2" y1="12" x2="22" y2="12" />
+					<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+				</svg>
+			);
 		case 'heatmap':
-			return (<svg {...props} viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<rect x="3" y="3" width="7" height="7" rx="1" />
+					<rect x="14" y="3" width="7" height="7" rx="1" />
+					<rect x="3" y="14" width="7" height="7" rx="1" />
+					<rect x="14" y="14" width="7" height="7" rx="1" />
+				</svg>
+			);
 		case 'comparison':
-			return (<svg {...props} viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<line x1="18" y1="20" x2="18" y2="10" />
+					<line x1="12" y1="20" x2="12" y2="4" />
+					<line x1="6" y1="20" x2="6" y2="14" />
+				</svg>
+			);
 		case 'table':
-			return (<svg {...props} viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+					<line x1="3" y1="9" x2="21" y2="9" />
+					<line x1="3" y1="15" x2="21" y2="15" />
+					<line x1="9" y1="3" x2="9" y2="21" />
+					<line x1="15" y1="3" x2="15" y2="21" />
+				</svg>
+			);
 		case 'history':
-			return (<svg {...props} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<circle cx="12" cy="12" r="10" />
+					<polyline points="12 6 12 12 16 14" />
+				</svg>
+			);
 		case 'today':
-			return (<svg {...props} viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<line x1="12" y1="1" x2="12" y2="23" />
+					<path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+				</svg>
+			);
 		case 'library':
-			return (<svg {...props} viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="13" y2="11"/></svg>);
+			return (
+				<svg {...props} viewBox="0 0 24 24">
+					<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+					<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+					<line x1="8" y1="7" x2="16" y2="7" />
+					<line x1="8" y1="11" x2="13" y2="11" />
+				</svg>
+			);
 		default:
 			return null;
 	}
 };
 
-/* ── Helpers ─────────────────────────────── */
-
-function useClickOutside(ref: React.RefObject<HTMLElement | null>, handler: () => void) {
-	useEffect(() => {
-		const listener = (e: MouseEvent | TouchEvent) => {
-			if (!ref.current || ref.current.contains(e.target as Node)) return;
-			handler();
-		};
-		document.addEventListener('mousedown', listener);
-		return () => document.removeEventListener('mousedown', listener);
-	}, [ref, handler]);
-}
-
 /* ── Sidebar content ─────────────────────────────── */
 
-const SidebarContent = ({
-	activeId,
-	onNavClick
-}: {
-	activeId: string;
-	onNavClick: (id: string) => void;
-}) => {
+const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick: (id: string) => void }) => {
 	const { t, i18n } = useTranslation();
 	const { settings, setSettings, calcOpen, setCalcOpen, viewMode, setViewMode } = useAppSettings();
 	const { data: health, isLoading: healthLoading, isError: healthError } = useHealthQuery();
@@ -679,28 +705,37 @@ const SidebarContent = ({
 		document.addEventListener('mousedown', listener);
 		return () => document.removeEventListener('mousedown', listener);
 	}, [addOpen]);
-	useEffect(() => { if (baseOpen) setTimeout(() => baseSearchRef.current?.focus(), 0); }, [baseOpen]);
-	useEffect(() => { if (addOpen) setTimeout(() => addSearchRef.current?.focus(), 0); }, [addOpen]);
+	useEffect(() => {
+		if (baseOpen) setTimeout(() => baseSearchRef.current?.focus(), 0);
+	}, [baseOpen]);
+	useEffect(() => {
+		if (addOpen) setTimeout(() => addSearchRef.current?.focus(), 0);
+	}, [addOpen]);
 
 	const allCurrencies = useMemo(() => {
 		if (apiCurrencies?.length) return apiCurrencies.sort();
 		return ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'KZT', 'RUB'];
 	}, [apiCurrencies]);
 
-	const groupByCat = useCallback((list: string[]) => {
-		const labelMap: Record<string, Record<CurrencyCategory, string>> = {
-			ru: CATEGORY_LABELS_RU, ja: CATEGORY_LABELS_JA, es: CATEGORY_LABELS_ES
-		};
-		const labels = labelMap[i18n.language] || CATEGORY_LABELS_EN;
-		const groups: { cat: CurrencyCategory; label: string; icon: string; items: string[] }[] = [];
-		for (const cat of ALL_CATEGORIES) {
-			const items = list.filter((c) => getCurrencyCategory(c) === cat);
-			if (items.length > 0) {
-				groups.push({ cat, label: labels[cat], icon: CATEGORY_ICONS[cat], items });
+	const groupByCat = useCallback(
+		(list: string[]) => {
+			const labelMap: Record<string, Record<CurrencyCategory, string>> = {
+				ru: CATEGORY_LABELS_RU,
+				ja: CATEGORY_LABELS_JA,
+				es: CATEGORY_LABELS_ES
+			};
+			const labels = labelMap[i18n.language] || CATEGORY_LABELS_EN;
+			const groups: { cat: CurrencyCategory; label: string; icon: string; items: string[] }[] = [];
+			for (const cat of ALL_CATEGORIES) {
+				const items = list.filter((c) => getCurrencyCategory(c) === cat);
+				if (items.length > 0) {
+					groups.push({ cat, label: labels[cat], icon: CATEGORY_ICONS[cat], items });
+				}
 			}
-		}
-		return groups;
-	}, [i18n.language]);
+			return groups;
+		},
+		[i18n.language]
+	);
 
 	const baseFiltered = useMemo(() => {
 		const filtered = allCurrencies.filter((c) => matchesCurrencySearch(c, baseSearch, i18n.language));
@@ -742,11 +777,21 @@ const SidebarContent = ({
 		const to = new Date();
 		let from: Date;
 		switch (settings.period) {
-			case 'week': from = subWeeks(to, 1); break;
-			case 'month': from = subMonths(to, 1); break;
-			case 'quarter': from = subMonths(to, 3); break;
-			case 'halfYear': from = subMonths(to, 6); break;
-			case 'year': from = subYears(to, 1); break;
+			case 'week':
+				from = subWeeks(to, 1);
+				break;
+			case 'month':
+				from = subMonths(to, 1);
+				break;
+			case 'quarter':
+				from = subMonths(to, 3);
+				break;
+			case 'halfYear':
+				from = subMonths(to, 6);
+				break;
+			case 'year':
+				from = subYears(to, 1);
+				break;
 		}
 		return { from: format(from, 'yyyy-MM-dd'), to: format(to, 'yyyy-MM-dd') };
 	}, [settings.period, settings.customFrom, settings.customTo]);
@@ -783,16 +828,39 @@ const SidebarContent = ({
 						<path d="M16 20 Q14 25 12 26 Q13 23 14 21 Z" fill="#5B8FA1" />
 						<circle cx="24" cy="13" r="3" fill="#2D3748" />
 						<circle cx="25" cy="12" r="1" fill="white" />
-						<path d="M26 18 L27.5 17 L29 18.5 L30 17" stroke="#2D3748" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+						<path
+							d="M26 18 L27.5 17 L29 18.5 L30 17"
+							stroke="#2D3748"
+							strokeWidth="1.2"
+							fill="none"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						/>
 					</svg>
 				</LogoIcon>
 				<LogoTextWrap>
 					<LogoName>Sharkie</LogoName>
 					<LogoSub>
 						{(() => {
-							const status = healthLoading ? 'connecting' : health?.status === 'ok' ? 'online' : healthError ? 'offline' : 'connecting';
-							const label = status === 'online' ? t('health.online') : status === 'offline' ? t('health.offline') : t('health.checking');
-							return <><HealthDot $status={status} title={label} />{label}</>;
+							const status = healthLoading
+								? 'connecting'
+								: health?.status === 'ok'
+									? 'online'
+									: healthError
+										? 'offline'
+										: 'connecting';
+							const label =
+								status === 'online'
+									? t('health.online')
+									: status === 'offline'
+										? t('health.offline')
+										: t('health.checking');
+							return (
+								<>
+									<HealthDot $status={status} title={label} />
+									{label}
+								</>
+							);
 						})()}
 					</LogoSub>
 				</LogoTextWrap>
@@ -800,88 +868,119 @@ const SidebarContent = ({
 
 			{/* Base currency + Period */}
 			<ScrollArea>
-		<WidgetArea>
-				<WidgetLabel>{t('controls.base')}</WidgetLabel>
-				<div ref={baseRef}>
-					<BaseButton ref={baseBtnRef} onClick={() => {
-						if (!baseOpen && baseBtnRef.current) {
-							const rect = baseBtnRef.current.getBoundingClientRect();
-							setBasePos({ top: rect.bottom + 4, left: rect.left });
-						}
-						setBaseOpen((v) => !v);
-					}}>
-						<BaseFlag>{CURRENCY_FLAGS[settings.baseCurrency] || ''}</BaseFlag>
-						<BaseInfo>
-							<BaseCode>{settings.baseCurrency}</BaseCode>
-							<BaseName>{getCurrencyName(settings.baseCurrency, i18n.language)}</BaseName>
-						</BaseInfo>
-						<Chevron>
-							<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-								<polyline points="6 9 12 15 18 9" />
-							</svg>
-						</Chevron>
-					</BaseButton>
-				</div>
+				<WidgetArea>
+					<WidgetLabel>{t('controls.base')}</WidgetLabel>
+					<div ref={baseRef}>
+						<BaseButton
+							ref={baseBtnRef}
+							onClick={() => {
+								if (!baseOpen && baseBtnRef.current) {
+									const rect = baseBtnRef.current.getBoundingClientRect();
+									setBasePos({ top: rect.bottom + 4, left: rect.left });
+								}
+								setBaseOpen((v) => !v);
+							}}
+						>
+							<BaseFlag>{CURRENCY_FLAGS[settings.baseCurrency] || ''}</BaseFlag>
+							<BaseInfo>
+								<BaseCode>{settings.baseCurrency}</BaseCode>
+								<BaseName>{getCurrencyName(settings.baseCurrency, i18n.language)}</BaseName>
+							</BaseInfo>
+							<Chevron>
+								<svg
+									width="12"
+									height="12"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2.5"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								>
+									<polyline points="6 9 12 15 18 9" />
+								</svg>
+							</Chevron>
+						</BaseButton>
+					</div>
 
-				<WidgetLabel style={{ marginTop: 6 }}>{t('controls.from')}</WidgetLabel>
-				<PillsRow>
-					{PERIODS.map((p) => (
-						<Pill key={p} $active={settings.period === p && !settings.customFrom} onClick={() => handlePeriodClick(p)}>
-							{t(`controls.period.${p}`)}
-						</Pill>
-					))}
-				</PillsRow>
-				<DateRow>
-					<DateInput type="date" value={effectiveDates.from} onChange={(e) => handleDateFromChange(e.target.value)} />
-					<DateSep>→</DateSep>
-					<DateInput type="date" value={effectiveDates.to} onChange={(e) => handleDateToChange(e.target.value)} />
-				</DateRow>
-
-				<WidgetLabel style={{ marginTop: 10 }}>{t('controls.currencies')}</WidgetLabel>
-				<ChipsWrap>
-					{settings.selectedCurrencies.map((code) => (
-						<CurrChip key={code}>
-							<ChipFlag>{CURRENCY_FLAGS[code] || ''}</ChipFlag>
-							{code}
-							<ChipRemove onClick={() => removeCurrency(code)}>&times;</ChipRemove>
-						</CurrChip>
-					))}
-					{settings.selectedCurrencies.length < 6 && <div ref={addRef} style={{ position: 'relative' }}>
-						<AddChipBtn ref={addBtnRef} onClick={() => {
-							if (!addOpen && addBtnRef.current) {
-								const rect = addBtnRef.current.getBoundingClientRect();
-								setAddPos({ top: rect.bottom + 4, left: rect.left });
-							}
-							setAddOpen((v) => !v);
-						}}>+ {t('controls.addCurrency')}</AddChipBtn>
-					</div>}
-				</ChipsWrap>
-			</WidgetArea>
-
-			<NavWrap role="navigation" aria-label="Dashboard sections">
-				{NAV_SECTIONS.map((section) => (
-					<SectionGroup key={section.labelKey}>
-						<SectionLabel>{t(section.labelKey)}</SectionLabel>
-						{section.items.map((item) => (
-							<NavItem key={item.id} $active={activeId === item.id} onClick={() => onNavClick(item.id)} aria-current={activeId === item.id ? 'true' : undefined}>
-								<NavIcon id={item.icon} />
-								{t(item.key)}
-							</NavItem>
+					<WidgetLabel style={{ marginTop: 6 }}>{t('controls.from')}</WidgetLabel>
+					<PillsRow>
+						{PERIODS.map((p) => (
+							<Pill
+								key={p}
+								$active={settings.period === p && !settings.customFrom}
+								onClick={() => handlePeriodClick(p)}
+							>
+								{t(`controls.period.${p}`)}
+							</Pill>
 						))}
-					</SectionGroup>
-				))}
-			</NavWrap>
+					</PillsRow>
+					<DateRow>
+						<DateInput type="date" value={effectiveDates.from} onChange={(e) => handleDateFromChange(e.target.value)} />
+						<DateSep>→</DateSep>
+						<DateInput type="date" value={effectiveDates.to} onChange={(e) => handleDateToChange(e.target.value)} />
+					</DateRow>
 
-		</ScrollArea>
+					<WidgetLabel style={{ marginTop: 10 }}>{t('controls.currencies')}</WidgetLabel>
+					<ChipsWrap>
+						{settings.selectedCurrencies.map((code) => (
+							<CurrChip key={code}>
+								<ChipFlag>{CURRENCY_FLAGS[code] || ''}</ChipFlag>
+								{code}
+								<ChipRemove onClick={() => removeCurrency(code)}>&times;</ChipRemove>
+							</CurrChip>
+						))}
+						{settings.selectedCurrencies.length < 6 && (
+							<div ref={addRef} style={{ position: 'relative' }}>
+								<AddChipBtn
+									ref={addBtnRef}
+									onClick={() => {
+										if (!addOpen && addBtnRef.current) {
+											const rect = addBtnRef.current.getBoundingClientRect();
+											setAddPos({ top: rect.bottom + 4, left: rect.left });
+										}
+										setAddOpen((v) => !v);
+									}}
+								>
+									+ {t('controls.addCurrency')}
+								</AddChipBtn>
+							</div>
+						)}
+					</ChipsWrap>
+				</WidgetArea>
+
+				<NavWrap role="navigation" aria-label="Dashboard sections">
+					{NAV_SECTIONS.map((section) => (
+						<SectionGroup key={section.labelKey}>
+							<SectionLabel>{t(section.labelKey)}</SectionLabel>
+							{section.items.map((item) => (
+								<NavItem
+									key={item.id}
+									$active={activeId === item.id}
+									onClick={() => onNavClick(item.id)}
+									aria-current={activeId === item.id ? 'true' : undefined}
+								>
+									<NavIcon id={item.icon} />
+									{t(item.key)}
+								</NavItem>
+							))}
+						</SectionGroup>
+					))}
+				</NavWrap>
+			</ScrollArea>
 
 			<BottomArea>
 				<SettingsRow style={{ marginBottom: 6 }}>
 					{viewMode === 'dashboard' && (
-						<ToggleBtn
-							$active={calcOpen}
-							onClick={() => setCalcOpen((v: boolean) => !v)}
-						>
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+						<ToggleBtn $active={calcOpen} onClick={() => setCalcOpen((v: boolean) => !v)}>
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
 								<rect x="4" y="2" width="16" height="20" rx="2" />
 								<line x1="8" y1="6" x2="16" y2="6" />
 								<line x1="8" y1="10" x2="16" y2="10" />
@@ -896,12 +995,26 @@ const SidebarContent = ({
 						onClick={() => setViewMode(viewMode === 'dashboard' ? 'calculator' : 'dashboard')}
 					>
 						{viewMode === 'calculator' ? (
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
 								<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
 								<line x1="1" y1="10" x2="23" y2="10" />
 							</svg>
 						) : (
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
 								<polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
 								<polyline points="17 6 23 6 23 12" />
 							</svg>
@@ -915,14 +1028,26 @@ const SidebarContent = ({
 							{isDark ? (
 								<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
 							) : (
-								<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>
+								<>
+									<circle cx="12" cy="12" r="5" />
+									<line x1="12" y1="1" x2="12" y2="3" />
+									<line x1="12" y1="21" x2="12" y2="23" />
+									<line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+									<line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+									<line x1="1" y1="12" x2="3" y2="12" />
+									<line x1="21" y1="12" x2="23" y2="12" />
+									<line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+									<line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+								</>
 							)}
 						</svg>
 						{isDark ? t('sidebar.dark') : t('sidebar.light')}
 					</ToggleBtn>
 					<ToggleBtn onClick={toggleLang}>
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-							<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+							<circle cx="12" cy="12" r="10" />
+							<line x1="2" y1="12" x2="22" y2="12" />
+							<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
 						</svg>
 						{LANGS[(LANGS.indexOf(settings.language) + 1) % LANGS.length].toUpperCase()}
 					</ToggleBtn>
@@ -949,7 +1074,9 @@ const SidebarContent = ({
 						<DList>
 							{baseFiltered.map((group) => (
 								<React.Fragment key={group.cat}>
-									<DCatLabel>{group.icon} {group.label}</DCatLabel>
+									<DCatLabel>
+										{group.icon} {group.label}
+									</DCatLabel>
 									{group.items.map((c) => (
 										<DItem key={c} $selected={c === settings.baseCurrency} onClick={() => selectBase(c)}>
 											<DFlag>{CURRENCY_FLAGS[c] || ''}</DFlag>
@@ -983,7 +1110,9 @@ const SidebarContent = ({
 						<DList>
 							{addFiltered.map((group) => (
 								<React.Fragment key={group.cat}>
-									<DCatLabel>{group.icon} {group.label}</DCatLabel>
+									<DCatLabel>
+										{group.icon} {group.label}
+									</DCatLabel>
 									{group.items.map((c) => (
 										<DItem key={c} onClick={() => addCurrency(c)}>
 											<DFlag>{CURRENCY_FLAGS[c] || ''}</DFlag>
@@ -1049,12 +1178,16 @@ const Sidebar = () => {
 				{isMobile && sidebarOpen && (
 					<>
 						<Backdrop
-							initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
 							transition={{ duration: 0.2 }}
 							onClick={() => setSidebarOpen(false)}
 						/>
 						<MobileSidebar
-							initial={{ x: -SIDEBAR_WIDTH }} animate={{ x: 0 }} exit={{ x: -SIDEBAR_WIDTH }}
+							initial={{ x: -SIDEBAR_WIDTH }}
+							animate={{ x: 0 }}
+							exit={{ x: -SIDEBAR_WIDTH }}
 							transition={{ type: 'spring', damping: 25, stiffness: 300 }}
 						>
 							<SidebarContent activeId={activeId} onNavClick={handleNavClick} />

@@ -41,7 +41,7 @@ export const SettingsContext = createContext<SettingsContextType>({
 
 export const useAppSettings = () => useContext(SettingsContext);
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export const Providers = ({ children }: { children: React.ReactNode }) => {
 	const [queryClient] = useState(() => {
 		const client = new QueryClient({
 			defaultOptions: {
@@ -98,4 +98,4 @@ export function Providers({ children }: { children: React.ReactNode }) {
 			</SettingsContext.Provider>
 		</QueryClientProvider>
 	);
-}
+};

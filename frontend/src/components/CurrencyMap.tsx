@@ -4,12 +4,7 @@ import React, { useState, useMemo, useEffect, useRef, memo } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import {
-	ComposableMap,
-	Geographies,
-	Geography,
-	ZoomableGroup
-} from 'react-simple-maps';
+import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
@@ -46,7 +41,27 @@ const CURRENCY_CENTROIDS: Record<string, [number, number]> = {
 const CURRENCY_COUNTRIES: Record<string, { countries: string[]; label: string }> = {
 	USD: { countries: ['840'], label: 'United States' },
 	EUR: {
-		countries: ['276', '250', '380', '724', '528', '056', '040', '620', '246', '372', '300', '233', '428', '440', '442', '470', '703', '705', '196'],
+		countries: [
+			'276',
+			'250',
+			'380',
+			'724',
+			'528',
+			'056',
+			'040',
+			'620',
+			'246',
+			'372',
+			'300',
+			'233',
+			'428',
+			'440',
+			'442',
+			'470',
+			'703',
+			'705',
+			'196'
+		],
 		label: 'Eurozone'
 	},
 	GBP: { countries: ['826'], label: 'United Kingdom' },
@@ -89,14 +104,15 @@ const PALETTE = CURRENCY_PALETTE;
 
 /* Compute center + zoom to fit all active currencies */
 function computeFocus(currencies: string[]): { center: [number, number]; zoom: number } {
-	const points = currencies
-		.map((c) => CURRENCY_CENTROIDS[c])
-		.filter((p): p is [number, number] => !!p);
+	const points = currencies.map((c) => CURRENCY_CENTROIDS[c]).filter((p): p is [number, number] => !!p);
 
 	if (points.length === 0) return { center: [10, 20], zoom: 1 };
 	if (points.length === 1) return { center: points[0], zoom: 3 };
 
-	let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
+	let minLon = Infinity,
+		maxLon = -Infinity,
+		minLat = Infinity,
+		maxLat = -Infinity;
 	for (const [lon, lat] of points) {
 		if (lon < minLon) minLon = lon;
 		if (lon > maxLon) maxLon = lon;
@@ -177,7 +193,9 @@ const MapContainer = styled.div`
 
 	.rsm-geography {
 		outline: none;
-		transition: fill 0.3s ease, stroke 0.3s ease;
+		transition:
+			fill 0.3s ease,
+			stroke 0.3s ease;
 	}
 `;
 
@@ -290,11 +308,7 @@ const CurrencyMap = ({ currencies, onAddCurrency }: CurrencyMapProps) => {
 	}, [focus]);
 
 	return (
-		<MapSection
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5, delay: 0.4 }}
-		>
+		<MapSection initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.4 }}>
 			<TitleRow>
 				<TitleBar />
 				<Title>{t('map.title')}</Title>
@@ -310,7 +324,10 @@ const CurrencyMap = ({ currencies, onAddCurrency }: CurrencyMapProps) => {
 						<ZoomableGroup
 							center={mapPos.center}
 							zoom={mapPos.zoom}
-							{...{ onMoveEnd: (p: { coordinates: [number, number]; zoom: number }) => setMapPos({ center: p.coordinates, zoom: p.zoom }) } as Record<string, unknown>}
+							{...({
+								onMoveEnd: (p: { coordinates: [number, number]; zoom: number }) =>
+									setMapPos({ center: p.coordinates, zoom: p.zoom })
+							} as Record<string, unknown>)}
 						>
 							<Geographies geography={GEO_URL}>
 								{({ geographies }) =>
@@ -369,72 +386,82 @@ const CurrencyMap = ({ currencies, onAddCurrency }: CurrencyMapProps) => {
 	);
 };
 
-const MemoGeography = memo(({ geo, isHighlighted, color, currency, countryCurrency, onTooltip, onClickCountry }: {
-	geo: { id: string; rsmKey: string; properties: { name: string } };
-	isHighlighted: boolean;
-	color?: string;
-	currency?: string;
-	countryCurrency?: string;
-	onTooltip: (data: TooltipData | null) => void;
-	onClickCountry?: (code: string) => void;
-}) => {
-	const hasClickAction = !!countryCurrency;
+const MemoGeography = memo(
+	({
+		geo,
+		isHighlighted,
+		color,
+		currency,
+		countryCurrency,
+		onTooltip,
+		onClickCountry
+	}: {
+		geo: { id: string; rsmKey: string; properties: { name: string } };
+		isHighlighted: boolean;
+		color?: string;
+		currency?: string;
+		countryCurrency?: string;
+		onTooltip: (data: TooltipData | null) => void;
+		onClickCountry?: (code: string) => void;
+	}) => {
+		const hasClickAction = !!countryCurrency;
 
-	return (
-		<Geography
-			geography={geo}
-			fill={isHighlighted ? color : '#dde1ec'}
-			stroke={isHighlighted ? color : '#bfc5d6'}
-			strokeWidth={isHighlighted ? 1 : 0.3}
-			style={{
-				default: {
-					opacity: isHighlighted ? 0.9 : 0.3,
-					transition: 'all 0.3s ease'
-				},
-				hover: {
-					opacity: isHighlighted ? 1 : hasClickAction ? 0.5 : 0.4,
-					filter: isHighlighted ? 'brightness(1.2)' : 'none',
-					cursor: hasClickAction ? 'pointer' : 'default'
-				},
-				pressed: { opacity: 1 }
-			}}
-			onClick={() => {
-				if (countryCurrency && onClickCountry) {
-					onClickCountry(countryCurrency);
-				}
-			}}
-			onMouseEnter={(e) => {
-				const showCurrency = currency || countryCurrency;
-				if (!showCurrency) return;
-				const container = (e.target as SVGElement).closest('.rsm-svg')?.parentElement;
-				if (!container) return;
-				const rect = container.getBoundingClientRect();
-				onTooltip({
-					x: e.clientX - rect.left,
-					y: e.clientY - rect.top - 40,
-					name: geo.properties.name,
-					currency: showCurrency,
-					color: color || '#94a3b8'
-				});
-			}}
-			onMouseMove={(e) => {
-				const showCurrency = currency || countryCurrency;
-				if (!showCurrency) return;
-				const container = (e.target as SVGElement).closest('.rsm-svg')?.parentElement;
-				if (!container) return;
-				const rect = container.getBoundingClientRect();
-				onTooltip({
-					x: e.clientX - rect.left,
-					y: e.clientY - rect.top - 40,
-					name: geo.properties.name,
-					currency: showCurrency,
-					color: color || '#94a3b8'
-				});
-			}}
-			onMouseLeave={() => onTooltip(null)}
-		/>
-	);
-});
+		return (
+			<Geography
+				geography={geo}
+				fill={isHighlighted ? color : '#dde1ec'}
+				stroke={isHighlighted ? color : '#bfc5d6'}
+				strokeWidth={isHighlighted ? 1 : 0.3}
+				style={{
+					default: {
+						opacity: isHighlighted ? 0.9 : 0.3,
+						transition: 'all 0.3s ease'
+					},
+					hover: {
+						opacity: isHighlighted ? 1 : hasClickAction ? 0.5 : 0.4,
+						filter: isHighlighted ? 'brightness(1.2)' : 'none',
+						cursor: hasClickAction ? 'pointer' : 'default'
+					},
+					pressed: { opacity: 1 }
+				}}
+				onClick={() => {
+					if (countryCurrency && onClickCountry) {
+						onClickCountry(countryCurrency);
+					}
+				}}
+				onMouseEnter={(e) => {
+					const showCurrency = currency || countryCurrency;
+					if (!showCurrency) return;
+					const container = (e.target as SVGElement).closest('.rsm-svg')?.parentElement;
+					if (!container) return;
+					const rect = container.getBoundingClientRect();
+					onTooltip({
+						x: e.clientX - rect.left,
+						y: e.clientY - rect.top - 40,
+						name: geo.properties.name,
+						currency: showCurrency,
+						color: color || '#94a3b8'
+					});
+				}}
+				onMouseMove={(e) => {
+					const showCurrency = currency || countryCurrency;
+					if (!showCurrency) return;
+					const container = (e.target as SVGElement).closest('.rsm-svg')?.parentElement;
+					if (!container) return;
+					const rect = container.getBoundingClientRect();
+					onTooltip({
+						x: e.clientX - rect.left,
+						y: e.clientY - rect.top - 40,
+						name: geo.properties.name,
+						currency: showCurrency,
+						color: color || '#94a3b8'
+					});
+				}}
+				onMouseLeave={() => onTooltip(null)}
+			/>
+		);
+	}
+);
 
 MemoGeography.displayName = 'MemoGeography';
 

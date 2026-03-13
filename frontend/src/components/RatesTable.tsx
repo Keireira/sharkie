@@ -57,11 +57,14 @@ const HeaderCell = styled.div<{ $highlighted?: boolean; $first?: boolean; $color
 	font-weight: 700;
 	white-space: nowrap;
 	letter-spacing: 0.02em;
-	transition: color 0.1s, background 0.1s;
+	transition:
+		color 0.1s,
+		background 0.1s;
 	display: flex;
 	align-items: center;
 	justify-content: ${({ $first }) => ($first ? 'flex-start' : 'flex-end')};
-	color: ${({ $highlighted, $color, theme }) => $highlighted ? theme.colors.accent : $color || theme.colors.textSecondary};
+	color: ${({ $highlighted, $color, theme }) =>
+		$highlighted ? theme.colors.accent : $color || theme.colors.textSecondary};
 	background: ${({ $highlighted, theme }) => ($highlighted ? theme.colors.accentGlow : 'transparent')};
 `;
 
@@ -105,21 +108,13 @@ const VCell = styled.div<{ $colHighlight?: boolean; $crosshair?: boolean; $first
 	white-space: nowrap;
 	color: ${({ $first, theme }) => ($first ? theme.colors.textSecondary : theme.colors.text)};
 	background: ${({ $crosshair, $colHighlight, theme }) =>
-		$crosshair
-			? theme.colors.accentGlow
-			: $colHighlight
-				? theme.colors.cardHover
-				: 'transparent'};
+		$crosshair ? theme.colors.accentGlow : $colHighlight ? theme.colors.cardHover : 'transparent'};
 	transition: background 0.1s;
 `;
 
 const RateSpan = styled.span<{ $trend: 'up' | 'down' | 'neutral' }>`
 	color: ${({ $trend, theme }) =>
-		$trend === 'up'
-			? theme.colors.success
-			: $trend === 'down'
-				? theme.colors.danger
-				: theme.colors.text};
+		$trend === 'up' ? theme.colors.success : $trend === 'down' ? theme.colors.danger : theme.colors.text};
 `;
 
 const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -170,8 +165,13 @@ const SkeletonBar = styled.div<{ $w: number }>`
 	animation: shimmer 1.4s ease-in-out infinite;
 
 	@keyframes shimmer {
-		0%, 100% { opacity: 0.3; }
-		50% { opacity: 0.6; }
+		0%,
+		100% {
+			opacity: 0.3;
+		}
+		50% {
+			opacity: 0.6;
+		}
 	}
 `;
 
@@ -197,9 +197,7 @@ const RatesTable = ({ data, currencies, isLoading }: RatesTableProps) => {
 	const rows = useMemo(() => {
 		if (!data?.data?.length) return [];
 
-		const sorted = [...data.data].sort(
-			(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-		);
+		const sorted = [...data.data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 		return sorted.map((entry, i) => {
 			const prev = sorted[i + 1];
@@ -232,16 +230,24 @@ const RatesTable = ({ data, currencies, isLoading }: RatesTableProps) => {
 					<ScrollWrapper>
 						<SkeletonWrap>
 							<SkeletonRow $header>
-								<SkeletonCell $first><SkeletonBar $w={60} /></SkeletonCell>
+								<SkeletonCell $first>
+									<SkeletonBar $w={60} />
+								</SkeletonCell>
 								{Array.from({ length: skelCols }).map((_, i) => (
-									<SkeletonCell key={i}><SkeletonBar $w={40} /></SkeletonCell>
+									<SkeletonCell key={i}>
+										<SkeletonBar $w={40} />
+									</SkeletonCell>
 								))}
 							</SkeletonRow>
 							{Array.from({ length: skelRows }).map((_, ri) => (
 								<SkeletonRow key={ri}>
-									<SkeletonCell $first><SkeletonBar $w={75} /></SkeletonCell>
+									<SkeletonCell $first>
+										<SkeletonBar $w={75} />
+									</SkeletonCell>
 									{Array.from({ length: skelCols }).map((_, ci) => (
-										<SkeletonCell key={ci}><SkeletonBar $w={55 + (ci % 3) * 8} /></SkeletonCell>
+										<SkeletonCell key={ci}>
+											<SkeletonBar $w={55 + (ci % 3) * 8} />
+										</SkeletonCell>
 									))}
 								</SkeletonRow>
 							))}
@@ -253,15 +259,13 @@ const RatesTable = ({ data, currencies, isLoading }: RatesTableProps) => {
 	}
 
 	return (
-		<TableSection
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5, delay: 0.4 }}
-		>
+		<TableSection initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.4 }}>
 			<TableCard>
 				<ScrollWrapper>
 					<HeaderRow>
-						<HeaderCell $first $highlighted={hoverCell?.col === -1}>{t('table.date')}</HeaderCell>
+						<HeaderCell $first $highlighted={hoverCell?.col === -1}>
+							{t('table.date')}
+						</HeaderCell>
 						{currencies.map((code, ci) => (
 							<HeaderCell
 								key={code}
@@ -308,9 +312,7 @@ const RatesTable = ({ data, currencies, isLoading }: RatesTableProps) => {
 												onMouseEnter={() => handleCellEnter(ri, ci)}
 											>
 												{cell.value != null ? (
-													<RateSpan $trend={cell.trend}>
-														{formatRate(cell.value, cell.code, i18n.language)}
-													</RateSpan>
+													<RateSpan $trend={cell.trend}>{formatRate(cell.value, cell.code, i18n.language)}</RateSpan>
 												) : (
 													'—'
 												)}

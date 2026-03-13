@@ -20,11 +20,7 @@ function getDateKey(date: string) {
 }
 
 /** Merge new rates into the cached map for a given date */
-function mergeRates(
-	queryClient: ReturnType<typeof useQueryClient>,
-	date: string,
-	rates: RatesMap
-) {
+function mergeRates(queryClient: ReturnType<typeof useQueryClient>, date: string, rates: RatesMap) {
 	const key = getDateKey(date);
 	const existing = queryClient.getQueryData<RatesMap>(key) || {};
 	const merged = { ...existing, ...rates };
@@ -38,37 +34,40 @@ function mergeRates(
 export function useFeedRateStore() {
 	const queryClient = useQueryClient();
 
-	return useCallback((data: HistoryResponse | undefined, base: string) => {
-		if (!data?.data?.length) return;
+	return useCallback(
+		(data: HistoryResponse | undefined, base: string) => {
+			if (!data?.data?.length) return;
 
-		for (const entry of data.data) {
-			const usdRates: RatesMap = {};
+			for (const entry of data.data) {
+				const usdRates: RatesMap = {};
 
-			if (base === 'USD') {
-				// Rates are already relative to USD
-				Object.assign(usdRates, entry.rates);
-			} else {
-				// Convert: we have rates relative to `base`
-				// entry.rates[X] = X per 1 base
-				// We need X per 1 USD
-				// If USD is in entry.rates: usdRate = entry.rates[USD]
-				// Then X per 1 USD = entry.rates[X] / entry.rates[USD]
-				const usdPerBase = entry.rates['USD'];
-				if (usdPerBase != null && usdPerBase !== 0) {
-					for (const [code, rate] of Object.entries(entry.rates)) {
-						if (code === 'USD') continue;
-						usdRates[code] = rate / usdPerBase;
+				if (base === 'USD') {
+					// Rates are already relative to USD
+					Object.assign(usdRates, entry.rates);
+				} else {
+					// Convert: we have rates relative to `base`
+					// entry.rates[X] = X per 1 base
+					// We need X per 1 USD
+					// If USD is in entry.rates: usdRate = entry.rates[USD]
+					// Then X per 1 USD = entry.rates[X] / entry.rates[USD]
+					const usdPerBase = entry.rates['USD'];
+					if (usdPerBase != null && usdPerBase !== 0) {
+						for (const [code, rate] of Object.entries(entry.rates)) {
+							if (code === 'USD') continue;
+							usdRates[code] = rate / usdPerBase;
+						}
+						// Also store the base currency itself
+						usdRates[base] = 1 / usdPerBase;
 					}
-					// Also store the base currency itself
-					usdRates[base] = 1 / usdPerBase;
+				}
+
+				if (Object.keys(usdRates).length > 0) {
+					mergeRates(queryClient, entry.date, usdRates);
 				}
 			}
-
-			if (Object.keys(usdRates).length > 0) {
-				mergeRates(queryClient, entry.date, usdRates);
-			}
-		}
-	}, [queryClient]);
+		},
+		[queryClient]
+	);
 }
 
 /**
@@ -135,12 +134,7 @@ export function useRate(from: string, to: string, date: string, enabled = true) 
  * Fetch rates for a date range (for charts/tables).
  * Results are fed into the central store.
  */
-export function useRangeRates(
-	from: string,
-	to: string,
-	currencies: string[],
-	enabled = true
-) {
+export function useRangeRates(from: string, to: string, currencies: string[], enabled = true) {
 	const queryClient = useQueryClient();
 
 	const sortedCurrencies = useMemo(() => {

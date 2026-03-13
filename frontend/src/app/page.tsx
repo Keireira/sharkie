@@ -14,7 +14,6 @@ import CurrencyLibrary from '@/components/CurrencyLibrary';
 import VolatilityHeatmap from '@/components/VolatilityHeatmap';
 import PeriodComparison from '@/components/PeriodComparison';
 import CatMascot, { type CatMood } from '@/components/CatMascot';
-import Footer from '@/components/Footer';
 import CalculatorView from '@/components/CalculatorView';
 import { useAppSettings } from '@/providers/Providers';
 import { useRatesQuery, useCompareRatesQuery, type CompareMode } from '@/hooks/useRates';
@@ -25,7 +24,9 @@ const DashboardShell = styled.div`
 	min-height: 100vh;
 	background: ${({ theme }) => theme.colors.bg};
 	color: ${({ theme }) => theme.colors.text};
-	transition: background-color 0.3s ease, color 0.3s ease;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
 `;
 
 const MainArea = styled.div`
@@ -203,14 +204,17 @@ const Home = () => {
 		if (params.has('calc')) setCalcOpen(true);
 	}, []);
 
-	const handleToggleMapCurrency = useCallback((code: string) => {
-		if (code === settings.baseCurrency) return;
-		if (settings.selectedCurrencies.includes(code)) {
-			setSettings({ selectedCurrencies: settings.selectedCurrencies.filter((c) => c !== code) });
-		} else if (settings.selectedCurrencies.length < 6) {
-			setSettings({ selectedCurrencies: [...settings.selectedCurrencies, code] });
-		}
-	}, [settings.selectedCurrencies, settings.baseCurrency, setSettings]);
+	const handleToggleMapCurrency = useCallback(
+		(code: string) => {
+			if (code === settings.baseCurrency) return;
+			if (settings.selectedCurrencies.includes(code)) {
+				setSettings({ selectedCurrencies: settings.selectedCurrencies.filter((c) => c !== code) });
+			} else if (settings.selectedCurrencies.length < 6) {
+				setSettings({ selectedCurrencies: [...settings.selectedCurrencies, code] });
+			}
+		},
+		[settings.selectedCurrencies, settings.baseCurrency, setSettings]
+	);
 
 	const toggleChartCurrency = useCallback((code: string) => {
 		setChartCurrencies((prev) => {
@@ -226,10 +230,7 @@ const Home = () => {
 	if (!isLoaded) {
 		return (
 			<Loader initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-				<Spinner
-					animate={{ rotate: 360 }}
-					transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-				/>
+				<Spinner animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }} />
 			</Loader>
 		);
 	}
@@ -304,11 +305,6 @@ const Home = () => {
 						{/* Currency Library (full width) */}
 						<FullRow id="library" aria-label="Currency library">
 							<CurrencyLibrary />
-						</FullRow>
-
-						{/* Footer */}
-						<FullRow>
-							<Footer />
 						</FullRow>
 					</Grid>
 				</Content>

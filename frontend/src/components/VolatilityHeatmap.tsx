@@ -23,7 +23,11 @@ const TitleBar = styled.div`
 	width: 3px;
 	height: 20px;
 	border-radius: 2px;
-	background: linear-gradient(180deg, ${({ theme }) => theme.colors.gradientStart}, ${({ theme }) => theme.colors.gradientEnd});
+	background: linear-gradient(
+		180deg,
+		${({ theme }) => theme.colors.gradientStart},
+		${({ theme }) => theme.colors.gradientEnd}
+	);
 `;
 
 const Title = styled.h2`
@@ -114,7 +118,9 @@ const Cell = styled.div<{ $bg: string; $hatched: boolean }>`
 	border-radius: 6px;
 	background: ${({ $bg }) => $bg};
 	cursor: pointer;
-	transition: transform 0.1s, box-shadow 0.1s;
+	transition:
+		transform 0.1s,
+		box-shadow 0.1s;
 	position: relative;
 	overflow: hidden;
 
@@ -134,7 +140,7 @@ const Cell = styled.div<{ $bg: string; $hatched: boolean }>`
 
 	&:hover {
 		transform: scale(1.1);
-		box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 		z-index: 2;
 	}
 
@@ -152,7 +158,7 @@ const TooltipBox = styled(motion.div)`
 	border: 1px solid ${({ theme }) => theme.colors.border};
 	border-radius: 10px;
 	padding: 8px 12px;
-	box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 	white-space: nowrap;
 	display: flex;
 	flex-direction: column;
@@ -261,9 +267,7 @@ const VolatilityHeatmap = ({ data, currencies }: VolatilityHeatmapProps) => {
 		if (!data?.data?.length || data.data.length < 2)
 			return { dates: [] as string[], matrix: [] as number[][], maxChange: 0 };
 
-		const sorted = [...data.data].sort(
-			(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-		);
+		const sorted = [...data.data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
 		// Sample dates to fit MAX_COLS
 		let sampled = sorted;
@@ -301,14 +305,11 @@ const VolatilityHeatmap = ({ data, currencies }: VolatilityHeatmapProps) => {
 
 	if (!dates.length || !matrix.length) return null;
 
-	const locale = i18n.language === 'ja' ? 'ja-JP' : i18n.language === 'ru' ? 'ru-RU' : i18n.language === 'es' ? 'es-ES' : 'en-US';
+	const locale =
+		i18n.language === 'ja' ? 'ja-JP' : i18n.language === 'ru' ? 'ru-RU' : i18n.language === 'es' ? 'es-ES' : 'en-US';
 
 	return (
-		<Section
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5, delay: 0.3 }}
-		>
+		<Section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
 			<TitleRow>
 				<TitleBar />
 				<Title>{t('heatmap.title', 'Volatility Heatmap')}</Title>
@@ -319,9 +320,7 @@ const VolatilityHeatmap = ({ data, currencies }: VolatilityHeatmapProps) => {
 						{/* Header row: corner + dates */}
 						<CornerCell />
 						{dates.map((d) => (
-							<DateHeader key={d}>
-								{fmtDate(d, locale)}
-							</DateHeader>
+							<DateHeader key={d}>{fmtDate(d, locale)}</DateHeader>
 						))}
 
 						{/* Data rows */}
@@ -365,9 +364,12 @@ const VolatilityHeatmap = ({ data, currencies }: VolatilityHeatmapProps) => {
 							data-tooltip
 						>
 							<TtLabel>
-								{CURRENCY_FLAGS[tip.code]} {tip.code} {tip.change >= 0 ? '+' : ''}{tip.change.toFixed(3)}%
+								{CURRENCY_FLAGS[tip.code]} {tip.code} {tip.change >= 0 ? '+' : ''}
+								{tip.change.toFixed(3)}%
 							</TtLabel>
-							<TtSub>{getCurrencyName(tip.code, i18n.language)} — {fmtDate(tip.date, locale)}</TtSub>
+							<TtSub>
+								{getCurrencyName(tip.code, i18n.language)} — {fmtDate(tip.date, locale)}
+							</TtSub>
 						</TooltipBox>
 					)}
 				</GridWrap>

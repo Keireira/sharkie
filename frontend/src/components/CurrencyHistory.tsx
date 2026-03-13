@@ -4,21 +4,21 @@ import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import {
-	ResponsiveContainer,
-	AreaChart,
-	Area,
-	XAxis,
-	YAxis,
-	Tooltip,
-	CartesianGrid
-} from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import type { HistoryResponse } from '@/lib/api';
 import { CURRENCY_FLAGS, getCurrencyName, formatRate as fmtRate } from '@/lib/currencies';
 
 const CARD_COLORS = [
-	'#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316',
-	'#eab308', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6'
+	'#6366f1',
+	'#8b5cf6',
+	'#ec4899',
+	'#f43f5e',
+	'#f97316',
+	'#eab308',
+	'#22c55e',
+	'#14b8a6',
+	'#06b6d4',
+	'#3b82f6'
 ];
 
 const Section = styled(motion.div)`
@@ -37,7 +37,11 @@ const TitleBar = styled.div`
 	width: 3px;
 	height: 20px;
 	border-radius: 2px;
-	background: linear-gradient(180deg, ${({ theme }) => theme.colors.gradientStart}, ${({ theme }) => theme.colors.gradientEnd});
+	background: linear-gradient(
+		180deg,
+		${({ theme }) => theme.colors.gradientStart},
+		${({ theme }) => theme.colors.gradientEnd}
+	);
 `;
 
 const SectionTitle = styled.h2`
@@ -53,7 +57,9 @@ const CardWrapper = styled(motion.div)`
 	border-radius: ${({ theme }) => theme.borderRadius.lg};
 	box-shadow: ${({ theme }) => theme.colors.shadowSm};
 	overflow: hidden;
-	transition: border-color 0.2s, box-shadow 0.2s;
+	transition:
+		border-color 0.2s,
+		box-shadow 0.2s;
 
 	&:hover {
 		border-color: ${({ theme }) => theme.colors.borderHover};
@@ -106,7 +112,9 @@ const CurrencyName = styled.span`
 	font-size: 13px;
 	color: ${({ theme }) => theme.colors.textMuted};
 	font-weight: 500;
-	@media (max-width: 520px) { display: none; }
+	@media (max-width: 520px) {
+		display: none;
+	}
 `;
 
 const CurrentRate = styled.span`
@@ -278,11 +286,7 @@ const CurrencyHistory = ({ data, currencies }: CurrencyHistoryProps) => {
 	if (!currencyData.length) return null;
 
 	return (
-		<Section
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5, delay: 0.4 }}
-		>
+		<Section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.4 }}>
 			<TitleRow>
 				<TitleBar />
 				<SectionTitle>{t('history.title')}</SectionTitle>
@@ -302,18 +306,12 @@ const CurrencyHistory = ({ data, currencies }: CurrencyHistoryProps) => {
 							<CurrentRate>{fmtRate(item.current, item.code, i18n.language)}</CurrentRate>
 						</HeaderLeft>
 						<HeaderRight>
-							<Change
-								$positive={item.change > 0}
-								$zero={Math.abs(item.change) < 0.001}
-							>
+							<Change $positive={item.change > 0} $zero={Math.abs(item.change) < 0.001}>
 								{Math.abs(item.change) < 0.001
 									? '—'
 									: `${item.change > 0 ? '↑' : '↓'} ${Math.abs(item.change).toFixed(2)}%`}
 							</Change>
-							<ExpandIcon
-								animate={{ rotate: expanded[item.code] ? 180 : 0 }}
-								transition={{ duration: 0.3 }}
-							>
+							<ExpandIcon animate={{ rotate: expanded[item.code] ? 180 : 0 }} transition={{ duration: 0.3 }}>
 								▼
 							</ExpandIcon>
 						</HeaderRight>
@@ -352,7 +350,9 @@ const CurrencyHistory = ({ data, currencies }: CurrencyHistoryProps) => {
 													axisLine={false}
 													width={60}
 													domain={['auto', 'auto']}
-													tickFormatter={(v: number) => v >= 100 ? v.toFixed(0) : v >= 1 ? v.toFixed(2) : v.toFixed(3)}
+													tickFormatter={(v: number) =>
+														v >= 100 ? v.toFixed(0) : v >= 1 ? v.toFixed(2) : v.toFixed(3)
+													}
 												/>
 												<Tooltip content={<HistoryTooltip />} />
 												<Area

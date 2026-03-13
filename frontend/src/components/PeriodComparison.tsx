@@ -29,7 +29,11 @@ const TitleBar = styled.div`
 	width: 3px;
 	height: 20px;
 	border-radius: 2px;
-	background: linear-gradient(180deg, ${({ theme }) => theme.colors.gradientStart}, ${({ theme }) => theme.colors.gradientEnd});
+	background: linear-gradient(
+		180deg,
+		${({ theme }) => theme.colors.gradientStart},
+		${({ theme }) => theme.colors.gradientEnd}
+	);
 `;
 
 const Title = styled.h2`
@@ -118,8 +122,12 @@ const Row = styled(motion.div)`
 	border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 	transition: background 0.15s;
 
-	&:last-child { border-bottom: none; }
-	&:hover { background: ${({ theme }) => theme.colors.bgSecondary}; }
+	&:last-child {
+		border-bottom: none;
+	}
+	&:hover {
+		background: ${({ theme }) => theme.colors.bgSecondary};
+	}
 
 	@media (max-width: 520px) {
 		grid-template-columns: 1.5fr 1fr 1fr 1fr;
@@ -135,7 +143,9 @@ const CurrencyCell = styled.div`
 
 const Flag = styled.span`
 	font-size: 18px;
-	@media (max-width: 520px) { font-size: 14px; }
+	@media (max-width: 520px) {
+		font-size: 14px;
+	}
 `;
 
 const CurrencyInfoEl = styled.div`
@@ -147,13 +157,17 @@ const Code = styled.span`
 	font-size: 14px;
 	font-weight: 700;
 	color: ${({ theme }) => theme.colors.text};
-	@media (max-width: 520px) { font-size: 12px; }
+	@media (max-width: 520px) {
+		font-size: 12px;
+	}
 `;
 
 const Name = styled.span`
 	font-size: 11px;
 	color: ${({ theme }) => theme.colors.textMuted};
-	@media (max-width: 520px) { display: none; }
+	@media (max-width: 520px) {
+		display: none;
+	}
 `;
 
 const RateCell = styled.div`
@@ -161,7 +175,9 @@ const RateCell = styled.div`
 	font-weight: 600;
 	color: ${({ theme }) => theme.colors.textSecondary};
 	font-variant-numeric: tabular-nums;
-	@media (max-width: 520px) { font-size: 11px; }
+	@media (max-width: 520px) {
+		font-size: 11px;
+	}
 `;
 
 const ChangeCell = styled.div<{ $positive: boolean; $zero: boolean }>`
@@ -170,7 +186,9 @@ const ChangeCell = styled.div<{ $positive: boolean; $zero: boolean }>`
 	font-variant-numeric: tabular-nums;
 	color: ${({ $zero, $positive, theme }) =>
 		$zero ? theme.colors.textMuted : $positive ? theme.colors.success : theme.colors.danger};
-	@media (max-width: 520px) { font-size: 11px; }
+	@media (max-width: 520px) {
+		font-size: 11px;
+	}
 `;
 
 const ChangeBar = styled.div<{ $positive: boolean; $width: number }>`
@@ -227,22 +245,21 @@ const PeriodComparison = ({
 	const rows = useMemo(() => {
 		if (!currentData?.data?.length || !compareData?.data?.length) return [];
 
-		return currencies.map((code) => {
-			const curValues = currentData.data.map((d) => d.rates[code]).filter((v) => v != null);
-			const prevValues = compareData.data.map((d) => d.rates[code]).filter((v) => v != null);
+		return currencies
+			.map((code) => {
+				const curValues = currentData.data.map((d) => d.rates[code]).filter((v) => v != null);
+				const prevValues = compareData.data.map((d) => d.rates[code]).filter((v) => v != null);
 
-			const curAvg = avg(curValues);
-			const prevAvg = avg(prevValues);
-			const change = prevAvg !== 0 ? ((curAvg - prevAvg) / prevAvg) * 100 : 0;
+				const curAvg = avg(curValues);
+				const prevAvg = avg(prevValues);
+				const change = prevAvg !== 0 ? ((curAvg - prevAvg) / prevAvg) * 100 : 0;
 
-			return { code, curAvg, prevAvg, change };
-		}).filter((r) => r.curAvg > 0 && r.prevAvg > 0);
+				return { code, curAvg, prevAvg, change };
+			})
+			.filter((r) => r.curAvg > 0 && r.prevAvg > 0);
 	}, [currentData, compareData, currencies]);
 
-	const maxAbsChange = useMemo(
-		() => Math.max(...rows.map((r) => Math.abs(r.change)), 1),
-		[rows]
-	);
+	const maxAbsChange = useMemo(() => Math.max(...rows.map((r) => Math.abs(r.change)), 1), [rows]);
 
 	const currentPeriod = formatPeriodRange(currentData);
 	const comparePeriod = formatPeriodRange(compareData);
@@ -250,27 +267,21 @@ const PeriodComparison = ({
 	if (!currentData?.data?.length) return null;
 
 	return (
-		<Section
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5, delay: 0.3 }}
-		>
+		<Section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.3 }}>
 			<TitleRow>
 				<TitleBar />
 				<Title>{t('comparison.title')}</Title>
 				<ModeRow>
 					{COMPARE_MODES.map((mode) => (
-						<ModeBtn
-							key={mode}
-							$active={compareMode === mode}
-							onClick={() => onCompareModeChange(mode)}
-						>
+						<ModeBtn key={mode} $active={compareMode === mode} onClick={() => onCompareModeChange(mode)}>
 							{t(`comparison.mode.${mode}`)}
 						</ModeBtn>
 					))}
 				</ModeRow>
 				{compareData?.data?.length ? (
-					<PeriodInfo>{currentPeriod} vs {comparePeriod}</PeriodInfo>
+					<PeriodInfo>
+						{currentPeriod} vs {comparePeriod}
+					</PeriodInfo>
 				) : null}
 			</TitleRow>
 			<Card>
@@ -299,17 +310,11 @@ const PeriodComparison = ({
 							</CurrencyCell>
 							<RateCell>{formatRate(row.curAvg, row.code, i18n.language)}</RateCell>
 							<RateCell>{formatRate(row.prevAvg, row.code, i18n.language)}</RateCell>
-							<ChangeCell
-								$positive={row.change > 0}
-								$zero={Math.abs(row.change) < 0.01}
-							>
+							<ChangeCell $positive={row.change > 0} $zero={Math.abs(row.change) < 0.01}>
 								{Math.abs(row.change) < 0.01
 									? '—'
 									: `${row.change > 0 ? '↑' : '↓'} ${Math.abs(row.change).toFixed(2)}%`}
-								<ChangeBar
-									$positive={row.change > 0}
-									$width={(Math.abs(row.change) / maxAbsChange) * 100}
-								/>
+								<ChangeBar $positive={row.change > 0} $width={(Math.abs(row.change) / maxAbsChange) * 100} />
 							</ChangeCell>
 						</Row>
 					))

@@ -5,7 +5,20 @@ import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import type { HistoryResponse } from '@/lib/api';
-import { CURRENCY_FLAGS, CURRENCY_SYMBOLS, getCurrencyName, matchesCurrencySearch, getCurrencyCategory, ALL_CATEGORIES, CATEGORY_LABELS_EN, CATEGORY_LABELS_RU, CATEGORY_LABELS_JA, CATEGORY_LABELS_ES, CATEGORY_ICONS, type CurrencyCategory } from '@/lib/currencies';
+import {
+	CURRENCY_FLAGS,
+	CURRENCY_SYMBOLS,
+	getCurrencyName,
+	matchesCurrencySearch,
+	getCurrencyCategory,
+	ALL_CATEGORIES,
+	CATEGORY_LABELS_EN,
+	CATEGORY_LABELS_RU,
+	CATEGORY_LABELS_JA,
+	CATEGORY_LABELS_ES,
+	CATEGORY_ICONS,
+	type CurrencyCategory
+} from '@/lib/currencies';
 import { useAppSettings } from '@/providers/Providers';
 import { useCurrenciesQuery } from '@/hooks/useRates';
 import { useRate } from '@/hooks/useRateStore';
@@ -132,7 +145,9 @@ const AmountSymbol = styled.span`
 	color: ${({ theme }) => theme.colors.textMuted};
 	margin-right: 6px;
 
-	@media (max-width: 768px) { font-size: 20px; }
+	@media (max-width: 768px) {
+		font-size: 20px;
+	}
 `;
 
 const AmountInput = styled.input`
@@ -154,8 +169,12 @@ const AmountInput = styled.input`
 		margin: 0;
 	}
 
-	&::placeholder { color: ${({ theme }) => theme.colors.textMuted}; }
-	@media (max-width: 768px) { font-size: 32px; }
+	&::placeholder {
+		color: ${({ theme }) => theme.colors.textMuted};
+	}
+	@media (max-width: 768px) {
+		font-size: 32px;
+	}
 `;
 
 const AmountDisplay = styled.div`
@@ -169,7 +188,9 @@ const AmountDisplay = styled.div`
 	text-overflow: ellipsis;
 	white-space: nowrap;
 
-	@media (max-width: 768px) { font-size: 32px; }
+	@media (max-width: 768px) {
+		font-size: 32px;
+	}
 `;
 
 const RateHint = styled.div`
@@ -188,7 +209,9 @@ const CalcBrand = styled.div`
 	user-select: none;
 	position: relative;
 
-	&:active { cursor: grabbing; }
+	&:active {
+		cursor: grabbing;
+	}
 `;
 
 const BrandTitle = styled.div`
@@ -255,7 +278,10 @@ const DateButton = styled.button`
 		color: ${({ theme }) => theme.colors.accent};
 	}
 
-	svg { width: 14px; height: 14px; }
+	svg {
+		width: 14px;
+		height: 14px;
+	}
 `;
 
 const NativeDateInput = styled.input`
@@ -284,12 +310,24 @@ const LoadingDots = styled.span`
 		animation: calcPulse 1.2s ease-in-out infinite;
 	}
 
-	span:nth-child(2) { animation-delay: 0.2s; }
-	span:nth-child(3) { animation-delay: 0.4s; }
+	span:nth-child(2) {
+		animation-delay: 0.2s;
+	}
+	span:nth-child(3) {
+		animation-delay: 0.4s;
+	}
 
 	@keyframes calcPulse {
-		0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-		40% { opacity: 1; transform: scale(1.1); }
+		0%,
+		80%,
+		100% {
+			opacity: 0.2;
+			transform: scale(0.8);
+		}
+		40% {
+			opacity: 1;
+			transform: scale(1.1);
+		}
 	}
 `;
 
@@ -354,7 +392,7 @@ const DropdownItem = styled.div<{ $selected?: boolean }>`
 	font-size: 13px;
 	border-radius: 8px;
 	color: ${({ theme }) => theme.colors.text};
-	background: ${({ $selected, theme }) => $selected ? theme.colors.accentGlow : 'transparent'};
+	background: ${({ $selected, theme }) => ($selected ? theme.colors.accentGlow : 'transparent')};
 
 	&:hover {
 		background: ${({ theme }) => theme.colors.bgSecondary};
@@ -424,7 +462,9 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 		try {
 			const saved = localStorage.getItem('sharkie-calc-pos');
 			if (saved) return JSON.parse(saved);
-		} catch { /* ignore */ }
+		} catch {
+			/* ignore */
+		}
 		return null;
 	});
 	const [dragging, setDragging] = useState(false);
@@ -444,7 +484,11 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 	// Save position to localStorage
 	useEffect(() => {
 		if (posPercent) {
-			try { localStorage.setItem('sharkie-calc-pos', JSON.stringify(posPercent)); } catch { /* ignore */ }
+			try {
+				localStorage.setItem('sharkie-calc-pos', JSON.stringify(posPercent));
+			} catch {
+				/* ignore */
+			}
 		}
 	}, [posPercent]);
 
@@ -497,7 +541,9 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 		};
 	}, [dragging]);
 
-	useEffect(() => { setFromCurrency(baseCurrency); }, [baseCurrency]);
+	useEffect(() => {
+		setFromCurrency(baseCurrency);
+	}, [baseCurrency]);
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -532,9 +578,7 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 	const { data: apiCurrencies } = useCurrenciesQuery();
 
 	const allAvailableCurrencies = useMemo(() => {
-		const fromRates = data?.data?.length
-			? Object.keys(data.data[data.data.length - 1].rates)
-			: [];
+		const fromRates = data?.data?.length ? Object.keys(data.data[data.data.length - 1].rates) : [];
 		const all = new Set([baseCurrency, ...currencies, ...fromRates, ...(apiCurrencies || [])]);
 		return Array.from(all);
 	}, [data, baseCurrency, currencies, apiCurrencies]);
@@ -555,7 +599,10 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 		return num * rate;
 	}, [amount, rate]);
 
-	const swap = () => { setFromCurrency(toCurrency); setToCurrency(fromCurrency); };
+	const swap = () => {
+		setFromCurrency(toCurrency);
+		setToCurrency(fromCurrency);
+	};
 
 	const fmt = (val: number): string => {
 		if (val >= 1000) return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -574,25 +621,28 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 
 	const lang = settings.language;
 	const catLabelMap: Record<string, Record<CurrencyCategory, string>> = {
-		ru: CATEGORY_LABELS_RU, ja: CATEGORY_LABELS_JA, es: CATEGORY_LABELS_ES
+		ru: CATEGORY_LABELS_RU,
+		ja: CATEGORY_LABELS_JA,
+		es: CATEGORY_LABELS_ES
 	};
 	const catLabels = catLabelMap[lang] || CATEGORY_LABELS_EN;
 
-	const groupByCat = useCallback((list: string[]) => {
-		const groups: { cat: CurrencyCategory; label: string; icon: string; items: string[] }[] = [];
-		for (const cat of ALL_CATEGORIES) {
-			const items = list.filter((c) => getCurrencyCategory(c) === cat);
-			if (items.length > 0) {
-				groups.push({ cat, label: catLabels[cat], icon: CATEGORY_ICONS[cat], items });
+	const groupByCat = useCallback(
+		(list: string[]) => {
+			const groups: { cat: CurrencyCategory; label: string; icon: string; items: string[] }[] = [];
+			for (const cat of ALL_CATEGORIES) {
+				const items = list.filter((c) => getCurrencyCategory(c) === cat);
+				if (items.length > 0) {
+					groups.push({ cat, label: catLabels[cat], icon: CATEGORY_ICONS[cat], items });
+				}
 			}
-		}
-		return groups;
-	}, [catLabels]);
+			return groups;
+		},
+		[catLabels]
+	);
 
 	const dropdownGroups = useMemo(() => {
-		const filtered = allAvailableCurrencies.filter((c) =>
-			matchesCurrencySearch(c, searchQuery, lang)
-		);
+		const filtered = allAvailableCurrencies.filter((c) => matchesCurrencySearch(c, searchQuery, lang));
 		return groupByCat(filtered);
 	}, [allAvailableCurrencies, searchQuery, lang, groupByCat]);
 
@@ -622,7 +672,7 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 			return d.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
 				year: 'numeric',
 				month: 'short',
-				day: 'numeric',
+				day: 'numeric'
 			});
 		} catch {
 			return dateStr;
@@ -649,12 +699,17 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 				<DropdownList>
 					{dropdownGroups.map((group) => (
 						<React.Fragment key={group.cat}>
-							<CatLabel>{group.icon} {group.label}</CatLabel>
+							<CatLabel>
+								{group.icon} {group.label}
+							</CatLabel>
 							{group.items.map((c) => (
 								<DropdownItem
 									key={c}
 									$selected={c === currentValue}
-									onClick={(e) => { e.stopPropagation(); handleSelectCurrency(which, c); }}
+									onClick={(e) => {
+										e.stopPropagation();
+										handleSelectCurrency(which, c);
+									}}
 								>
 									<DropdownItemFlag>{CURRENCY_FLAGS[c] || ''}</DropdownItemFlag>
 									<DropdownItemCode>{c}</DropdownItemCode>
@@ -672,49 +727,51 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 		<AnimatePresence>
 			{open && (
 				<>
-					<Overlay
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						onClick={onClose}
-					/>
+					<Overlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
 					<Panel
 						ref={panelRef}
 						initial={{ opacity: 0, y: 30, scale: 0.95 }}
 						animate={{ opacity: 1, y: 0, scale: 1 }}
 						exit={{ opacity: 0, y: 30, scale: 0.95 }}
 						transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-						style={posPercent
-							? { left: `${posPercent.x}vw`, top: `${posPercent.y}vh`, right: 'auto', bottom: 'auto' }
-							: { bottom: 92, right: 24 }
+						style={
+							posPercent
+								? { left: `${posPercent.x}vw`, top: `${posPercent.y}vh`, right: 'auto', bottom: 'auto' }
+								: { bottom: 92, right: 24 }
 						}
 					>
-						<CalcBrand
-							onMouseDown={handleDragStart}
-							onTouchStart={handleDragStart}
-						>
-							<CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</CloseBtn>
+						<CalcBrand onMouseDown={handleDragStart} onTouchStart={handleDragStart}>
+							<CloseBtn
+								onClick={(e) => {
+									e.stopPropagation();
+									onClose();
+								}}
+							>
+								✕
+							</CloseBtn>
 							<BrandTitle>{t('calc.title')}</BrandTitle>
 						</CalcBrand>
 
 						<Header>
 							<HeaderRow>
-								<CurrPill
-									ref={fromDropdownRef}
-									onClick={() => toggleDropdown('from')}
-								>
+								<CurrPill ref={fromDropdownRef} onClick={() => toggleDropdown('from')}>
 									<CurrFlag>{CURRENCY_FLAGS[fromCurrency]}</CurrFlag>
 									<CurrCode>{fromCurrency}</CurrCode>
 									<CurrChevron>▼</CurrChevron>
 									{renderDropdown('from')}
 								</CurrPill>
 
-								<SwapIcon onClick={(e) => { e.stopPropagation(); swap(); }} whileTap={{ scale: 0.85 }}>⇄</SwapIcon>
-
-								<CurrPill
-									ref={toDropdownRef}
-									onClick={() => toggleDropdown('to')}
+								<SwapIcon
+									onClick={(e) => {
+										e.stopPropagation();
+										swap();
+									}}
+									whileTap={{ scale: 0.85 }}
 								>
+									⇄
+								</SwapIcon>
+
+								<CurrPill ref={toDropdownRef} onClick={() => toggleDropdown('to')}>
 									<CurrFlag>{CURRENCY_FLAGS[toCurrency]}</CurrFlag>
 									<CurrCode>{toCurrency}</CurrCode>
 									<CurrChevron>▼</CurrChevron>
@@ -724,23 +781,30 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 						</Header>
 
 						<DateRow>
-								<DateButton style={{ position: 'relative' }} onClick={handleDateClick}>
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-										<rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-										<line x1="16" y1="2" x2="16" y2="6" />
-										<line x1="8" y1="2" x2="8" y2="6" />
-										<line x1="3" y1="10" x2="21" y2="10" />
-									</svg>
-									{formatSelectedDate(selectedDate)}
-									<NativeDateInput
-										ref={hiddenDateRef}
-										type="date"
-										value={selectedDate}
-										max={todayStr}
-										onChange={(e) => setSelectedDate(e.target.value)}
-									/>
-								</DateButton>
-							</DateRow>
+							<DateButton style={{ position: 'relative' }} onClick={handleDateClick}>
+								<svg
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								>
+									<rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+									<line x1="16" y1="2" x2="16" y2="6" />
+									<line x1="8" y1="2" x2="8" y2="6" />
+									<line x1="3" y1="10" x2="21" y2="10" />
+								</svg>
+								{formatSelectedDate(selectedDate)}
+								<NativeDateInput
+									ref={hiddenDateRef}
+									type="date"
+									value={selectedDate}
+									max={todayStr}
+									onChange={(e) => setSelectedDate(e.target.value)}
+								/>
+							</DateButton>
+						</DateRow>
 
 						<AmountBlock $active>
 							<AmountRow>
@@ -758,7 +822,9 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 							{calcFetching ? (
 								<RateHint>{t('calc.loading', 'Loading rate...')}</RateHint>
 							) : rate != null ? (
-								<RateHint>1 {fromCurrency} = {fmtShort(rate)} {toCurrency}</RateHint>
+								<RateHint>
+									1 {fromCurrency} = {fmtShort(rate)} {toCurrency}
+								</RateHint>
 							) : null}
 						</AmountBlock>
 
@@ -766,13 +832,21 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 							<AmountRow>
 								{toSymbol && <AmountSymbol>{toSymbol}</AmountSymbol>}
 								{calcFetching ? (
-									<AmountDisplay><LoadingDots><span /><span /><span /></LoadingDots></AmountDisplay>
+									<AmountDisplay>
+										<LoadingDots>
+											<span />
+											<span />
+											<span />
+										</LoadingDots>
+									</AmountDisplay>
 								) : (
 									<AmountDisplay>{result != null ? fmt(result) : '—'}</AmountDisplay>
 								)}
 							</AmountRow>
 							{!calcFetching && reverseRate != null && (
-								<RateHint>1 {toCurrency} = {fmtShort(reverseRate)} {fromCurrency}</RateHint>
+								<RateHint>
+									1 {toCurrency} = {fmtShort(reverseRate)} {fromCurrency}
+								</RateHint>
 							)}
 						</AmountBlock>
 					</Panel>

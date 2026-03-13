@@ -58,11 +58,16 @@ export type CompareMode = 'week' | 'month' | 'quarter' | 'halfYear' | 'year';
 
 function shiftDate(date: Date, mode: CompareMode): Date {
 	switch (mode) {
-		case 'week': return subWeeks(date, 1);
-		case 'month': return subMonths(date, 1);
-		case 'quarter': return subMonths(date, 3);
-		case 'halfYear': return subMonths(date, 6);
-		case 'year': return subYears(date, 1);
+		case 'week':
+			return subWeeks(date, 1);
+		case 'month':
+			return subMonths(date, 1);
+		case 'quarter':
+			return subMonths(date, 3);
+		case 'halfYear':
+			return subMonths(date, 6);
+		case 'year':
+			return subYears(date, 1);
 	}
 }
 

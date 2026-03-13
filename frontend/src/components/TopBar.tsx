@@ -95,7 +95,10 @@ const ViewToggleBtn = styled.button<{ $active?: boolean }>`
 		border-color: ${({ theme }) => theme.colors.accent};
 		color: ${({ theme }) => theme.colors.accent};
 	}
-	svg { width: 16px; height: 16px; }
+	svg {
+		width: 16px;
+		height: 16px;
+	}
 
 	@media (max-width: 768px) {
 		display: flex;
@@ -119,12 +122,26 @@ const TopBar = () => {
 			<MobileTitle>Sharkie</MobileTitle>
 			<ViewToggleBtn $active={viewMode === 'dashboard'} onClick={toggleView} aria-label="Toggle view">
 				{viewMode === 'calculator' ? (
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
 						<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
 						<line x1="1" y1="10" x2="23" y2="10" />
 					</svg>
 				) : (
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
 						<rect x="4" y="2" width="16" height="20" rx="2" />
 						<line x1="8" y1="6" x2="16" y2="6" />
 						<line x1="8" y1="10" x2="16" y2="10" />

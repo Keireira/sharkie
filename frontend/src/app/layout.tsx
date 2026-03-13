@@ -66,8 +66,7 @@ export const metadata: Metadata = {
 	twitter: {
 		card: 'summary',
 		title: 'Sharkie - Live Currency Exchange Rates & Converter',
-		description:
-			'Free real-time currency exchange rates dashboard with interactive charts and a built-in converter.',
+		description: 'Free real-time currency exchange rates dashboard with interactive charts and a built-in converter.',
 		images: ['/icons/icon-512.png']
 	},
 	robots: {
@@ -140,10 +139,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
 		<html lang="en" className={inter.variable} suppressHydrationWarning>
 			<head>
 				<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-				<script
-					type="application/ld+json"
-					dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-				/>
+				<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 			</head>
 			<body>
 				<StyledComponentsRegistry>

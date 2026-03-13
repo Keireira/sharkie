@@ -53,7 +53,11 @@ const TitleBar = styled.div`
 	width: 3px;
 	height: 20px;
 	border-radius: 2px;
-	background: linear-gradient(180deg, ${({ theme }) => theme.colors.gradientStart}, ${({ theme }) => theme.colors.gradientEnd});
+	background: linear-gradient(
+		180deg,
+		${({ theme }) => theme.colors.gradientStart},
+		${({ theme }) => theme.colors.gradientEnd}
+	);
 `;
 
 const Title = styled.h2`
@@ -134,7 +138,8 @@ const SkeletonLine = styled.div`
 	width: 80%;
 	height: 4px;
 	border-radius: 2px;
-	background: linear-gradient(90deg,
+	background: linear-gradient(
+		90deg,
 		${({ theme }) => theme.colors.bgSecondary} 25%,
 		${({ theme }) => theme.colors.border} 50%,
 		${({ theme }) => theme.colors.bgSecondary} 75%
@@ -309,20 +314,23 @@ const CurrencyChart = ({ data, isLoading, isError, error, currencies }: Currency
 		});
 	}, [data, i18n.language, visibleCurrencies, isNormalized, firstDayRates]);
 
-	const toggleCurrency = useCallback((code: string) => {
-		setHiddenCurrencies((prev) => {
-			const next = new Set(prev);
-			if (next.has(code)) {
-				next.delete(code);
-			} else {
-				// Don't hide the last visible one
-				const willBeVisible = currencies.filter((c) => !next.has(c) && c !== code);
-				if (willBeVisible.length === 0) return prev;
-				next.add(code);
-			}
-			return next;
-		});
-	}, [currencies]);
+	const toggleCurrency = useCallback(
+		(code: string) => {
+			setHiddenCurrencies((prev) => {
+				const next = new Set(prev);
+				if (next.has(code)) {
+					next.delete(code);
+				} else {
+					// Don't hide the last visible one
+					const willBeVisible = currencies.filter((c) => !next.has(c) && c !== code);
+					if (willBeVisible.length === 0) return prev;
+					next.add(code);
+				}
+				return next;
+			});
+		},
+		[currencies]
+	);
 
 	// Average rate for reference line (only for single-currency view)
 	const avgRate = useMemo(() => {
@@ -334,34 +342,38 @@ const CurrencyChart = ({ data, isLoading, isError, error, currencies }: Currency
 	}, [visibleCurrencies, chartData]);
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const CustomTooltip = useCallback(({ active, payload }: any) => {
-		if (!active || !payload?.length) return null;
-		// Get the data point from payload (recharts attaches it)
-		const dataPoint = payload[0]?.payload as ChartDataPoint | undefined;
-		const dateStr = dataPoint?.date || '';
-		return (
-			<TooltipBox>
-				<TooltipDate>{formatDateFull(dateStr, i18n.language)}</TooltipDate>
-				{payload.map((entry: { color: string; name: string; value: number }, idx: number) => {
-					const rawRate = dataPoint?.[`_raw_${entry.name}`] as number | undefined;
-					const pctChange = isNormalized ? entry.value : null;
-					return (
-						<TooltipRow key={idx}>
-							<TooltipDot $color={entry.color} />
-							<TooltipFlag>{CURRENCY_FLAGS[entry.name] || ''}</TooltipFlag>
-							<TooltipName>{entry.name}</TooltipName>
-							<TooltipVal>{fmtRate(rawRate ?? entry.value, entry.name, i18n.language)}</TooltipVal>
-							{pctChange !== null && (
-								<TooltipChange $positive={pctChange >= 0}>
-									{pctChange >= 0 ? '+' : ''}{pctChange.toFixed(2)}%
-								</TooltipChange>
-							)}
-						</TooltipRow>
-					);
-				})}
-			</TooltipBox>
-		);
-	}, [i18n.language, isNormalized]);
+	const CustomTooltip = useCallback(
+		({ active, payload }: any) => {
+			if (!active || !payload?.length) return null;
+			// Get the data point from payload (recharts attaches it)
+			const dataPoint = payload[0]?.payload as ChartDataPoint | undefined;
+			const dateStr = dataPoint?.date || '';
+			return (
+				<TooltipBox>
+					<TooltipDate>{formatDateFull(dateStr, i18n.language)}</TooltipDate>
+					{payload.map((entry: { color: string; name: string; value: number }, idx: number) => {
+						const rawRate = dataPoint?.[`_raw_${entry.name}`] as number | undefined;
+						const pctChange = isNormalized ? entry.value : null;
+						return (
+							<TooltipRow key={idx}>
+								<TooltipDot $color={entry.color} />
+								<TooltipFlag>{CURRENCY_FLAGS[entry.name] || ''}</TooltipFlag>
+								<TooltipName>{entry.name}</TooltipName>
+								<TooltipVal>{fmtRate(rawRate ?? entry.value, entry.name, i18n.language)}</TooltipVal>
+								{pctChange !== null && (
+									<TooltipChange $positive={pctChange >= 0}>
+										{pctChange >= 0 ? '+' : ''}
+										{pctChange.toFixed(2)}%
+									</TooltipChange>
+								)}
+							</TooltipRow>
+						);
+					})}
+				</TooltipBox>
+			);
+		},
+		[i18n.language, isNormalized]
+	);
 
 	const renderContent = () => {
 		if (isLoading) {
@@ -407,11 +419,7 @@ const CurrencyChart = ({ data, isLoading, isError, error, currencies }: Currency
 								</linearGradient>
 							))}
 						</defs>
-						<CartesianGrid
-							strokeDasharray="3 3"
-							stroke={theme.colors.chartGrid}
-							vertical={false}
-						/>
+						<CartesianGrid strokeDasharray="3 3" stroke={theme.colors.chartGrid} vertical={false} />
 						<XAxis
 							dataKey="dateFormatted"
 							tick={{ fontSize: 11, fill: theme.colors.textMuted }}
@@ -525,11 +533,7 @@ const CurrencyChart = ({ data, isLoading, isError, error, currencies }: Currency
 	};
 
 	return (
-		<Card
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.4, delay: 0.2 }}
-		>
+		<Card initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
 			<TitleRow>
 				<TitleBar />
 				<Title>{t('chart.title')}</Title>

@@ -155,7 +155,7 @@ const CalcBadge = styled.div<{ $open?: boolean }>`
 	font-size: 14px;
 	line-height: 1;
 	white-space: nowrap;
-	background: ${({ $open, theme }) => $open ? theme.colors.danger : theme.colors.accent};
+	background: ${({ $open, theme }) => ($open ? theme.colors.danger : theme.colors.accent)};
 	color: #fff;
 	padding: 3px 8px;
 	border-radius: 10px;
@@ -194,7 +194,9 @@ function loadCatPos(): { x: number; y: number } | null {
 	try {
 		const saved = localStorage.getItem(STORAGE_KEY);
 		if (saved) return JSON.parse(saved);
-	} catch { /* ignore */ }
+	} catch {
+		/* ignore */
+	}
 	return null;
 }
 
@@ -217,7 +219,11 @@ const CatMascot = ({ mood = 'idle', onCalcToggle, calcOpen, onPositionChange }: 
 	// Persist position and notify parent
 	useEffect(() => {
 		if (posPercent) {
-			try { localStorage.setItem(STORAGE_KEY, JSON.stringify(posPercent)); } catch { /* ignore */ }
+			try {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(posPercent));
+			} catch {
+				/* ignore */
+			}
 		}
 		onPositionChange?.(posPercent ? { xPct: posPercent.x, yPct: posPercent.y } : null);
 	}, [posPercent, onPositionChange]);
@@ -231,17 +237,20 @@ const CatMascot = ({ mood = 'idle', onCalcToggle, calcOpen, onPositionChange }: 
 		setDragging(true);
 	}, []);
 
-	const handlePointerMove = useCallback((e: React.PointerEvent) => {
-		if (!dragging) return;
-		didDrag.current = true;
-		const vw = window.innerWidth || 1;
-		const vh = window.innerHeight || 1;
-		const catW = 60;
-		const catH = 65;
-		const newX = Math.max(0, Math.min(e.clientX - dragOffset.current.x, vw - catW));
-		const newY = Math.max(0, Math.min(e.clientY - dragOffset.current.y, vh - catH));
-		setPosPercent({ x: (newX / vw) * 100, y: (newY / vh) * 100 });
-	}, [dragging]);
+	const handlePointerMove = useCallback(
+		(e: React.PointerEvent) => {
+			if (!dragging) return;
+			didDrag.current = true;
+			const vw = window.innerWidth || 1;
+			const vh = window.innerHeight || 1;
+			const catW = 60;
+			const catH = 65;
+			const newX = Math.max(0, Math.min(e.clientX - dragOffset.current.x, vw - catW));
+			const newY = Math.max(0, Math.min(e.clientY - dragOffset.current.y, vh - catH));
+			setPosPercent({ x: (newX / vw) * 100, y: (newY / vh) * 100 });
+		},
+		[dragging]
+	);
 
 	const handlePointerUp = useCallback(() => {
 		setDragging(false);

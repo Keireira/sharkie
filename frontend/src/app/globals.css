@@ -20,7 +20,9 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	text-rendering: optimizeLegibility;
-	transition: background-color 0.4s ease, color 0.4s ease;
+	transition:
+		background-color 0.4s ease,
+		color 0.4s ease;
 	letter-spacing: -0.011em;
 	line-height: 1.6;
 }
@@ -30,7 +32,9 @@ a {
 	text-decoration: none;
 }
 
-input, select, button {
+input,
+select,
+button {
 	font-family: inherit;
 }
 
@@ -62,33 +66,63 @@ input, select, button {
 
 /* Cat-specific animations */
 @keyframes float {
-	0%, 100% { transform: translateY(0px); }
-	50% { transform: translateY(-10px); }
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
 }
 
 @keyframes purr {
-	0%, 100% { transform: scale(1); }
-	50% { transform: scale(1.02); }
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.02);
+	}
 }
 
 @keyframes tail-wag {
-	0%, 100% { transform: rotate(-10deg); }
-	50% { transform: rotate(10deg); }
+	0%,
+	100% {
+		transform: rotate(-10deg);
+	}
+	50% {
+		transform: rotate(10deg);
+	}
 }
 
 @keyframes blink {
-	0%, 90%, 100% { transform: scaleY(1); }
-	95% { transform: scaleY(0.1); }
+	0%,
+	90%,
+	100% {
+		transform: scaleY(1);
+	}
+	95% {
+		transform: scaleY(0.1);
+	}
 }
 
 /* Subtle shimmer for accent elements */
 @keyframes shimmer {
-	0% { background-position: -200% 0; }
-	100% { background-position: 200% 0; }
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
 }
 
 /* Gentle pulse for status indicators */
 @keyframes pulse-glow {
-	0%, 100% { opacity: 0.6; }
-	50% { opacity: 1; }
+	0%,
+	100% {
+		opacity: 0.6;
+	}
+	50% {
+		opacity: 1;
+	}
 }

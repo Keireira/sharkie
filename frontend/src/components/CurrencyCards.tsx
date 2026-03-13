@@ -8,8 +8,16 @@ import type { HistoryResponse } from '@/lib/api';
 import { CURRENCY_FLAGS, getCurrencyName, formatRate } from '@/lib/currencies';
 
 const CARD_COLORS = [
-	'#818cf8', '#a78bfa', '#f472b6', '#fb7185', '#fb923c',
-	'#fbbf24', '#34d399', '#2dd4bf', '#22d3ee', '#60a5fa'
+	'#818cf8',
+	'#a78bfa',
+	'#f472b6',
+	'#fb7185',
+	'#fb923c',
+	'#fbbf24',
+	'#34d399',
+	'#2dd4bf',
+	'#22d3ee',
+	'#60a5fa'
 ];
 
 const Section = styled(motion.div)`
@@ -28,7 +36,11 @@ const TitleBar = styled.div`
 	width: 3px;
 	height: 20px;
 	border-radius: 2px;
-	background: linear-gradient(180deg, ${({ theme }) => theme.colors.gradientStart}, ${({ theme }) => theme.colors.gradientEnd});
+	background: linear-gradient(
+		180deg,
+		${({ theme }) => theme.colors.gradientStart},
+		${({ theme }) => theme.colors.gradientEnd}
+	);
 `;
 
 const Title = styled.h2`
@@ -58,7 +70,9 @@ const CardItem = styled(motion.div)<{ $active: boolean }>`
 	overflow: hidden;
 	position: relative;
 	cursor: pointer;
-	transition: box-shadow 0.2s, border-color 0.2s;
+	transition:
+		box-shadow 0.2s,
+		border-color 0.2s;
 
 	&:hover {
 		box-shadow: ${({ theme }) => theme.colors.shadow};
@@ -79,7 +93,9 @@ const CardTop = styled.div`
 
 const Flag = styled.span`
 	font-size: 20px;
-	@media (max-width: 520px) { font-size: 16px; }
+	@media (max-width: 520px) {
+		font-size: 16px;
+	}
 `;
 
 const Code = styled.span`
@@ -187,8 +203,13 @@ const SkeletonBar = styled.div<{ $w: number; $h?: number }>`
 	animation: shimmer 1.4s ease-in-out infinite;
 
 	@keyframes shimmer {
-		0%, 100% { opacity: 0.3; }
-		50% { opacity: 0.6; }
+		0%,
+		100% {
+			opacity: 0.3;
+		}
+		50% {
+			opacity: 0.6;
+		}
 	}
 `;
 
@@ -230,7 +251,12 @@ const CurrencyCards = ({ data, currencies, chartCurrencies, onToggleChart, isLoa
 				</TitleRow>
 				<Grid>
 					{Array.from({ length: count }).map((_, i) => (
-						<SkeletonCard key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.04 * i }}>
+						<SkeletonCard
+							key={i}
+							initial={{ opacity: 0, y: 16 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.3, delay: 0.04 * i }}
+						>
 							<SkeletonRow>
 								<SkeletonBar $w={24} $h={24} style={{ borderRadius: 6 }} />
 								<SkeletonBar $w={36} $h={16} />
@@ -248,11 +274,7 @@ const CurrencyCards = ({ data, currencies, chartCurrencies, onToggleChart, isLoa
 	}
 
 	return (
-		<Section
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.4, delay: 0.3 }}
-		>
+		<Section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.3 }}>
 			<TitleRow>
 				<TitleBar />
 				<Title>{t('cards.title')}</Title>
@@ -273,16 +295,11 @@ const CurrencyCards = ({ data, currencies, chartCurrencies, onToggleChart, isLoa
 							<CardTop>
 								<Flag>{CURRENCY_FLAGS[item.code] || '💰'}</Flag>
 								<Code>{item.code}</Code>
-								<ChartBadge $active={isOnChart}>
-									{isOnChart ? '✓ active' : '+ show'}
-								</ChartBadge>
+								<ChartBadge $active={isOnChart}>{isOnChart ? '✓ active' : '+ show'}</ChartBadge>
 							</CardTop>
 							<Name>{getCurrencyName(item.code, i18n.language)}</Name>
 							<Rate>{formatRate(item.current, item.code, i18n.language)}</Rate>
-							<Change
-								$positive={item.change > 0}
-								$zero={Math.abs(item.change) < 0.001}
-							>
+							<Change $positive={item.change > 0} $zero={Math.abs(item.change) < 0.001}>
 								{Math.abs(item.change) < 0.001
 									? t('cards.noChange')
 									: `${item.change > 0 ? '↑' : '↓'} ${Math.abs(item.change).toFixed(2)}%`}

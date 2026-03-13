@@ -62,13 +62,27 @@ const ChartTableView = ({ data, isLoading, isError, error, chartCurrencies, tabl
 		<Wrapper>
 			<ToggleBar>
 				<ToggleBtn $active={view === 'chart'} onClick={() => setView('chart')}>
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth={2}
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
 						<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
 					</svg>
 					{t('chart.title', 'Chart')}
 				</ToggleBtn>
 				<ToggleBtn $active={view === 'table'} onClick={() => setView('table')}>
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth={2}
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
 						<rect x="3" y="3" width="18" height="18" rx="2" />
 						<line x1="3" y1="9" x2="21" y2="9" />
 						<line x1="3" y1="15" x2="21" y2="15" />
@@ -80,13 +94,7 @@ const ChartTableView = ({ data, isLoading, isError, error, chartCurrencies, tabl
 			</ToggleBar>
 
 			{view === 'chart' ? (
-				<CurrencyChart
-					data={data}
-					isLoading={isLoading}
-					isError={isError}
-					error={error}
-					currencies={chartCurrencies}
-				/>
+				<CurrencyChart data={data} isLoading={isLoading} isError={isError} error={error} currencies={chartCurrencies} />
 			) : (
 				<RatesTable data={data} currencies={chartCurrencies} isLoading={isLoading} />
 			)}

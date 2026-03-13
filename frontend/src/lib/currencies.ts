@@ -10,7 +10,7 @@ export const CURRENCY_PALETTE = [
 	'#00cc76', // neon green
 	'#ff9500', // neon orange
 	'#4cc9f0', // neon sky
-	'#c77dff', // neon lavender
+	'#c77dff' // neon lavender
 ];
 
 /* ── Currency categories ────────────────────────── */
