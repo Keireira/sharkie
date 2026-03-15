@@ -9,19 +9,10 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-	output: 'standalone',
+	output: 'export',
 	turbopack: {},
 	compiler: {
 		styledComponents: true
-	},
-	async rewrites() {
-		const apiBase = process.env.API_BASE || 'http://0.0.0.0:3000';
-		return [
-			{
-				source: '/api/proxy/:path*',
-				destination: `${apiBase}/:path*`
-			}
-		];
 	}
 };
 
