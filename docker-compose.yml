@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
     labels:
       org.opencontainers.image.title: "Sharkie — Exchange Rates API"
-      org.opencontainers.image.description: "sharkie.keireira.com"
+      org.opencontainers.image.description: "sharkie.uha.app"
       org.opencontainers.image.authors: "Alena Dzhukich <mail@alena.red>"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
@@ -44,10 +44,10 @@ services:
     restart: unless-stopped
     labels:
       org.opencontainers.image.title: "Sharkie — Exchange Rates Frontend"
-      org.opencontainers.image.description: "sharkie.keireira.com"
+      org.opencontainers.image.description: "sharkie.uha.app"
       org.opencontainers.image.authors: "Alena Dzhukich <mail@alena.red>"
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      test: ["CMD-SHELL", "nginx -t"]
       interval: 15s
       timeout: 10s
       retries: 5
