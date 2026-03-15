@@ -67,4 +67,5 @@ volumes:
 
 networks:
   sharkie-network:
+    name: sharkie-network
     driver: bridge
