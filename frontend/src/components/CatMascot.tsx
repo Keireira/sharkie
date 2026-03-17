@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import styled, { keyframes } from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import styled, { keyframes } from 'styled-components';
 
 const float = keyframes`
 	0%, 100% { transform: translateY(0px); }
@@ -147,7 +148,7 @@ const SpeechBubble = styled(motion.div)`
 	}
 `;
 
-const CalcBadge = styled.div<{ $open?: boolean }>`
+const _CalcBadge = styled.div<{ $open?: boolean }>`
 	position: absolute;
 	bottom: -16px;
 	left: 50%;
@@ -214,6 +215,7 @@ const CatMascot = ({ mood = 'idle', onCalcToggle, calcOpen, onPositionChange }: 
 			const timer = setTimeout(() => setShowBubble(false), 4000);
 			return () => clearTimeout(timer);
 		}
+		return undefined;
 	}, [mood]);
 
 	// Persist position and notify parent

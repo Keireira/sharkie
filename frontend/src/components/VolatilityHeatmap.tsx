@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
 import type { HistoryResponse } from '@/lib/api';
-import { CURRENCY_FLAGS, getCurrencyName, CURRENCY_PALETTE } from '@/lib/currencies';
+import { CURRENCY_FLAGS, CURRENCY_PALETTE, getCurrencyName } from '@/lib/currencies';
 
 const Section = styled(motion.div)`
 	display: flex;
@@ -393,7 +393,7 @@ const VolatilityHeatmap = ({ data, currencies }: VolatilityHeatmapProps) => {
 
 function fmtDate(dateStr: string, locale: string): string {
 	try {
-		const d = new Date(dateStr + 'T00:00:00');
+		const d = new Date(`${dateStr}T00:00:00`);
 		return d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 	} catch {
 		return dateStr;

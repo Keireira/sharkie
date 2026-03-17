@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useMemo, useState, useCallback, useRef } from 'react';
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { motion } from 'framer-motion';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
 import type { HistoryResponse } from '@/lib/api';
-import { getCurrencyName, formatRate, CURRENCY_PALETTE } from '@/lib/currencies';
+import { CURRENCY_PALETTE, formatRate, getCurrencyName } from '@/lib/currencies';
 
 const ROW_HEIGHT = 40;
 const MAX_HEIGHT = 480;

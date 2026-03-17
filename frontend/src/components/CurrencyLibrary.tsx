@@ -1,26 +1,27 @@
 'use client';
 
-import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
-import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAppSettings } from '@/providers/Providers';
+import styled from 'styled-components';
+import { useTodayAllRatesQuery } from '@/hooks/useRates';
 import {
+	ALL_CATEGORIES,
+	CATEGORY_ICONS,
+	CATEGORY_LABELS_EN,
+	CATEGORY_LABELS_ES,
+	CATEGORY_LABELS_JA,
+	CATEGORY_LABELS_RU,
 	CURRENCY_FLAGS,
 	CURRENCY_SYMBOLS,
-	getCurrencyName,
-	matchesCurrencySearch,
-	getCurrencyCategory,
-	ALL_CATEGORIES,
-	CATEGORY_LABELS_EN,
-	CATEGORY_LABELS_RU,
-	CATEGORY_LABELS_JA,
-	CATEGORY_LABELS_ES,
-	CATEGORY_ICONS,
 	type CurrencyCategory,
-	formatRate as fmtRate
+	formatRate as fmtRate,
+	getCurrencyCategory,
+	getCurrencyName,
+	matchesCurrencySearch
 } from '@/lib/currencies';
-import { useTodayAllRatesQuery } from '@/hooks/useRates';
+import { useAppSettings } from '@/providers/Providers';
 
 /* ── Styled ───────────────────────────────────── */
 

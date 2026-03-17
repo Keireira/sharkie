@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef, memo } from 'react';
-import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
+import styled from 'styled-components';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 

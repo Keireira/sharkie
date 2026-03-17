@@ -1,11 +1,15 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { fetchRates, fetchHealth, fetchCurrencies } from '@/lib/api';
 import { format, subMonths, subWeeks, subYears } from 'date-fns';
+
+import { fetchCurrencies, fetchHealth, fetchRates } from '@/lib/api';
+
 import type { Settings } from './useSettings';
 
-export function getPeriodDates(period: Settings['period']) {
+export type CompareMode = 'week' | 'month' | 'quarter' | 'halfYear' | 'year';
+
+export const getPeriodDates = (period: Settings['period']) => {
 	const to = new Date();
 	let from: Date;
 
@@ -31,9 +35,9 @@ export function getPeriodDates(period: Settings['period']) {
 		from: format(from, 'yyyy-MM-dd'),
 		to: format(to, 'yyyy-MM-dd')
 	};
-}
+};
 
-export function useRatesQuery(settings: Settings) {
+export const useRatesQuery = (settings: Settings) => {
 	const periodDates = getPeriodDates(settings.period);
 	const from = settings.customFrom || periodDates.from;
 	const to = settings.customTo || periodDates.to;
@@ -52,11 +56,9 @@ export function useRatesQuery(settings: Settings) {
 		refetchOnWindowFocus: false,
 		retry: 2
 	});
-}
+};
 
-export type CompareMode = 'week' | 'month' | 'quarter' | 'halfYear' | 'year';
-
-function shiftDate(date: Date, mode: CompareMode): Date {
+const shiftDate = (date: Date, mode: CompareMode): Date => {
 	switch (mode) {
 		case 'week':
 			return subWeeks(date, 1);
@@ -69,9 +71,9 @@ function shiftDate(date: Date, mode: CompareMode): Date {
 		case 'year':
 			return subYears(date, 1);
 	}
-}
+};
 
-export function useCompareRatesQuery(settings: Settings, compareMode: CompareMode) {
+export const useCompareRatesQuery = (settings: Settings, compareMode: CompareMode) => {
 	const periodDates = getPeriodDates(settings.period);
 	const from = settings.customFrom || periodDates.from;
 	const to = settings.customTo || periodDates.to;
@@ -97,9 +99,9 @@ export function useCompareRatesQuery(settings: Settings, compareMode: CompareMod
 		prevFrom,
 		prevTo
 	};
-}
+};
 
-export function useTodayAllRatesQuery(baseCurrency: string) {
+export const useTodayAllRatesQuery = (baseCurrency: string) => {
 	const today = format(new Date(), 'yyyy-MM-dd');
 
 	return useQuery({
@@ -114,9 +116,9 @@ export function useTodayAllRatesQuery(baseCurrency: string) {
 		refetchOnWindowFocus: false,
 		retry: 2
 	});
-}
+};
 
-export function useCurrenciesQuery() {
+export const useCurrenciesQuery = () => {
 	return useQuery({
 		queryKey: ['currencies'],
 		queryFn: fetchCurrencies,
@@ -125,9 +127,9 @@ export function useCurrenciesQuery() {
 		refetchOnWindowFocus: false,
 		retry: 2
 	});
-}
+};
 
-export function useHealthQuery() {
+export const useHealthQuery = () => {
 	return useQuery({
 		queryKey: ['health'],
 		queryFn: fetchHealth,
@@ -135,4 +137,4 @@ export function useHealthQuery() {
 		refetchInterval: 60 * 1000,
 		retry: 1
 	});
-}
+};

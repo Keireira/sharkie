@@ -1,23 +1,25 @@
 'use client';
 
-import React, { useMemo, useEffect, useState, useCallback } from 'react';
-import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import Sidebar from '@/components/Sidebar';
-import TopBar from '@/components/TopBar';
-import CurrencyCards from '@/components/CurrencyCards';
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
 import Calculator from '@/components/Calculator';
-import CurrencyMap from '@/components/CurrencyMap';
+import CalculatorView from '@/components/CalculatorView';
+import type { CatMood } from '@/components/CatMascot';
+import CatMascot from '@/components/CatMascot';
 import ChartTableView from '@/components/ChartTableView';
+import CurrencyCards from '@/components/CurrencyCards';
 import CurrencyHistory from '@/components/CurrencyHistory';
 import CurrencyLibrary from '@/components/CurrencyLibrary';
-import VolatilityHeatmap from '@/components/VolatilityHeatmap';
+import CurrencyMap from '@/components/CurrencyMap';
 import PeriodComparison from '@/components/PeriodComparison';
-import CatMascot, { type CatMood } from '@/components/CatMascot';
-import CalculatorView from '@/components/CalculatorView';
-import { useAppSettings } from '@/providers/Providers';
-import { useRatesQuery, useCompareRatesQuery, type CompareMode } from '@/hooks/useRates';
+import Sidebar from '@/components/Sidebar';
+import TopBar from '@/components/TopBar';
+import VolatilityHeatmap from '@/components/VolatilityHeatmap';
 import { useFeedRateStore } from '@/hooks/useRateStore';
+import type { CompareMode } from '@/hooks/useRates';
+import { useCompareRatesQuery, useRatesQuery } from '@/hooks/useRates';
+import { useAppSettings } from '@/providers/Providers';
 
 const DashboardShell = styled.div`
 	display: flex;
@@ -52,7 +54,7 @@ const Content = styled.main`
 	}
 `;
 
-/* ── Dashboard grid ─────────────────────────────── */
+/* -- Dashboard grid --------------------------------- */
 const Grid = styled.div`
 	display: grid;
 	grid-template-columns: 1fr 380px;
@@ -81,12 +83,10 @@ const Section = styled.section`
 	}
 `;
 
-/* Spans full width of both columns */
 const FullRow = styled(Section)`
 	grid-column: 1 / -1;
 `;
 
-/* Left column (main) */
 const MainCol = styled(Section)`
 	grid-column: 1;
 
@@ -95,7 +95,6 @@ const MainCol = styled(Section)`
 	}
 `;
 
-/* Right column (sidebar widgets) */
 const SideCol = styled(Section)`
 	grid-column: 2;
 	display: flex;
@@ -146,39 +145,43 @@ const Home = () => {
 	const { data: compareData } = useCompareRatesQuery(settings, compareMode);
 	const feedStore = useFeedRateStore();
 
+	const [hasGreeted, setHasGreeted] = useState(false);
+	const [chartCurrencies, setChartCurrencies] = useState<string[]>([]);
+	const [catPos, setCatPos] = useState<{ xPct: number; yPct: number } | null>(null);
+
 	// Feed dashboard data into centralized rate store
 	useEffect(() => {
 		if (data) feedStore(data, data.base);
 	}, [data, feedStore]);
+
 	useEffect(() => {
 		if (compareData) feedStore(compareData, compareData.base);
 	}, [compareData, feedStore]);
-	const [hasGreeted, setHasGreeted] = useState(false);
-	const [chartCurrencies, setChartCurrencies] = useState<string[]>([]);
-	const [catPos, setCatPos] = useState<{ xPct: number; yPct: number } | null>(null);
-	const handleCatPosChange = useCallback((pos: { xPct: number; yPct: number } | null) => {
-		setCatPos(pos);
-	}, []);
 
-	const catMood: CatMood = useMemo(() => {
-		if (!hasGreeted) return 'greeting';
-		if (isLoading) return 'loading';
-		if (isError) return 'error';
-		if (data) return 'success';
-		return 'idle';
-	}, [isLoading, isError, data, hasGreeted]);
-
+	// Greeting timer
 	useEffect(() => {
 		if (!hasGreeted) {
 			const timer = setTimeout(() => setHasGreeted(true), 3000);
 			return () => clearTimeout(timer);
 		}
+		return undefined;
 	}, [hasGreeted]);
 
-	const filteredCurrencies = useMemo(() => {
+	// Derive cat mood
+	const catMood: CatMood = !hasGreeted
+		? 'greeting'
+		: isLoading
+			? 'loading'
+			: isError
+				? 'error'
+				: data
+					? 'success'
+					: 'idle';
+
+	// Derive filtered currencies - hide base, replace with USD if needed
+	const filteredCurrencies = (() => {
 		let list = settings.selectedCurrencies;
 
-		// Hide base currency — replace with USD if not already present
 		if (list.includes(settings.baseCurrency)) {
 			list = list.filter((c) => c !== settings.baseCurrency);
 			if (!list.includes('USD') && settings.baseCurrency !== 'USD') {
@@ -187,9 +190,9 @@ const Home = () => {
 		}
 
 		return list;
-	}, [settings.selectedCurrencies, settings.baseCurrency]);
+	})();
 
-	// Sync chart currencies with filtered list — default to first 5
+	// Sync chart currencies with filtered list - default to first 5
 	useEffect(() => {
 		setChartCurrencies((prev) => {
 			const valid = prev.filter((c) => filteredCurrencies.includes(c));
@@ -202,30 +205,31 @@ const Home = () => {
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
 		if (params.has('calc')) setCalcOpen(true);
-	}, []);
+		// eslint-disable-next-line -- run only on mount
+	}, [setCalcOpen]);
 
-	const handleToggleMapCurrency = useCallback(
-		(code: string) => {
-			if (code === settings.baseCurrency) return;
-			if (settings.selectedCurrencies.includes(code)) {
-				setSettings({ selectedCurrencies: settings.selectedCurrencies.filter((c) => c !== code) });
-			} else if (settings.selectedCurrencies.length < 6) {
-				setSettings({ selectedCurrencies: [...settings.selectedCurrencies, code] });
-			}
-		},
-		[settings.selectedCurrencies, settings.baseCurrency, setSettings]
-	);
+	const handleCatPosChange = (pos: { xPct: number; yPct: number } | null) => {
+		setCatPos(pos);
+	};
 
-	const toggleChartCurrency = useCallback((code: string) => {
+	const handleToggleMapCurrency = (code: string) => {
+		if (code === settings.baseCurrency) return;
+		if (settings.selectedCurrencies.includes(code)) {
+			setSettings({ selectedCurrencies: settings.selectedCurrencies.filter((c) => c !== code) });
+		} else if (settings.selectedCurrencies.length < 6) {
+			setSettings({ selectedCurrencies: [...settings.selectedCurrencies, code] });
+		}
+	};
+
+	const toggleChartCurrency = (code: string) => {
 		setChartCurrencies((prev) => {
 			if (prev.includes(code)) {
-				// Don't allow removing the last one
 				if (prev.length <= 1) return prev;
 				return prev.filter((c) => c !== code);
 			}
 			return [...prev, code];
 		});
-	}, []);
+	};
 
 	if (!isLoaded) {
 		return (
@@ -255,7 +259,6 @@ const Home = () => {
 				<Content>
 					<VisuallyHidden>Sharkie — Live Currency Exchange Rates Dashboard</VisuallyHidden>
 					<Grid>
-						{/* Row 1: Currency cards (full width) */}
 						<FullRow id="cards" aria-label="Currency overview cards">
 							<CurrencyCards
 								data={data}
@@ -266,7 +269,6 @@ const Home = () => {
 							/>
 						</FullRow>
 
-						{/* Row 3: Chart / Table (full width) */}
 						<FullRow id="chart" aria-label="Exchange rate chart and table">
 							<ChartTableView
 								data={data}
@@ -278,7 +280,6 @@ const Home = () => {
 							/>
 						</FullRow>
 
-						{/* Row 4: Map (left) + History (right) */}
 						<MainCol id="map" aria-label="Currency world map">
 							<CurrencyMap currencies={filteredCurrencies} onAddCurrency={handleToggleMapCurrency} />
 						</MainCol>
@@ -286,12 +287,10 @@ const Home = () => {
 							<CurrencyHistory data={data} currencies={filteredCurrencies} />
 						</SideCol>
 
-						{/* Volatility Heatmap (full width) */}
 						<FullRow id="heatmap" aria-label="Volatility heatmap">
 							<VolatilityHeatmap data={data} currencies={filteredCurrencies} />
 						</FullRow>
 
-						{/* Period Comparison (full width) */}
 						<FullRow id="comparison" aria-label="Period comparison">
 							<PeriodComparison
 								currentData={data}
@@ -302,7 +301,6 @@ const Home = () => {
 							/>
 						</FullRow>
 
-						{/* Currency Library (full width) */}
 						<FullRow id="library" aria-label="Currency library">
 							<CurrencyLibrary />
 						</FullRow>

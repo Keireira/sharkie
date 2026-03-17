@@ -23,22 +23,22 @@ export interface FetchRatesParams {
 	base?: string;
 }
 
-export async function fetchHealth(): Promise<HealthResponse> {
+export const fetchHealth = async (): Promise<HealthResponse> => {
 	const res = await fetch(`${API_BASE}/health`);
 	if (!res.ok) throw new Error('API is down');
 	return res.json();
-}
+};
 
-export async function fetchCurrencies(): Promise<string[]> {
+export const fetchCurrencies = async (): Promise<string[]> => {
 	const res = await fetch(`${API_BASE}/currencies`);
 	if (!res.ok) throw new Error('Failed to fetch currencies');
 	const data = await res.json();
 	if (Array.isArray(data)) return data;
 	if (data?.currencies && Array.isArray(data.currencies)) return data.currencies;
 	return [];
-}
+};
 
-export async function fetchRates(params: FetchRatesParams): Promise<HistoryResponse> {
+export const fetchRates = async (params: FetchRatesParams): Promise<HistoryResponse> => {
 	const searchParams = new URLSearchParams();
 
 	if (params.date) {
@@ -64,4 +64,4 @@ export async function fetchRates(params: FetchRatesParams): Promise<HistoryRespo
 	}
 
 	return res.json();
-}
+};

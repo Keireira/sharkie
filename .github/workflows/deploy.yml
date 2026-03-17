@@ -1,4 +1,4 @@
-name: Deploy image
+name: Deploy
 
 on:
   workflow_dispatch:
@@ -21,11 +21,15 @@ on:
       AUTH_KEY:
         required: true
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' }}
 
     steps:
       - name: Checkout
@@ -41,14 +45,17 @@ jobs:
           target: "/opt/sharkie"
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOSTNAME }}
           username: ${{ secrets.AUTH_USER }}
           key: ${{ secrets.AUTH_KEY }}
           script: |
             cd /opt/sharkie
-            docker login registry.keireira.com -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" -p "${{ secrets.DOCKER_REGISTRY_PASSWORD }}"
+            docker login registry.keireira.com \
+              -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" \
+              -p "${{ secrets.DOCKER_REGISTRY_PASSWORD }}"
             docker compose pull
             docker compose up -d --remove-orphans
             docker image prune -f
+            docker logout registry.keireira.com

@@ -1,27 +1,27 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
+import { useRate } from '@/hooks/useRateStore';
+import { useCurrenciesQuery } from '@/hooks/useRates';
 import type { HistoryResponse } from '@/lib/api';
 import {
+	ALL_CATEGORIES,
+	CATEGORY_ICONS,
+	CATEGORY_LABELS_EN,
+	CATEGORY_LABELS_ES,
+	CATEGORY_LABELS_JA,
+	CATEGORY_LABELS_RU,
 	CURRENCY_FLAGS,
 	CURRENCY_SYMBOLS,
-	getCurrencyName,
-	matchesCurrencySearch,
+	type CurrencyCategory,
 	getCurrencyCategory,
-	ALL_CATEGORIES,
-	CATEGORY_LABELS_EN,
-	CATEGORY_LABELS_RU,
-	CATEGORY_LABELS_JA,
-	CATEGORY_LABELS_ES,
-	CATEGORY_ICONS,
-	type CurrencyCategory
+	getCurrencyName,
+	matchesCurrencySearch
 } from '@/lib/currencies';
 import { useAppSettings } from '@/providers/Providers';
-import { useCurrenciesQuery } from '@/hooks/useRates';
-import { useRate } from '@/hooks/useRateStore';
 
 /* ── Panel ───────────────────────────────────── */
 
@@ -595,7 +595,7 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 
 	const result = useMemo(() => {
 		const num = parseFloat(amount);
-		if (isNaN(num) || rate == null) return null;
+		if (Number.isNaN(num) || rate == null) return null;
 		return num * rate;
 	}, [amount, rate]);
 
@@ -668,7 +668,7 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 	const formatSelectedDate = (dateStr: string): string => {
 		if (!dateStr) return '';
 		try {
-			const d = new Date(dateStr + 'T00:00:00');
+			const d = new Date(`${dateStr}T00:00:00`);
 			return d.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', {
 				year: 'numeric',
 				month: 'short',

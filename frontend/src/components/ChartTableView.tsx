@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
+import type { HistoryResponse } from '@/lib/api';
 import CurrencyChart from './CurrencyChart';
 import RatesTable from './RatesTable';
-import type { HistoryResponse } from '@/lib/api';
 
 const Wrapper = styled.div`
 	display: flex;

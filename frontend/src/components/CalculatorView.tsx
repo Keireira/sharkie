@@ -1,30 +1,30 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 import { format, subMonths } from 'date-fns';
-import type { HistoryResponse } from '@/lib/api';
-import {
-	CURRENCY_FLAGS,
-	CURRENCY_SYMBOLS,
-	getCurrencyName,
-	matchesCurrencySearch,
-	getCurrencyCategory,
-	ALL_CATEGORIES,
-	CATEGORY_LABELS_EN,
-	CATEGORY_LABELS_RU,
-	CATEGORY_LABELS_JA,
-	CATEGORY_LABELS_ES,
-	CATEGORY_ICONS,
-	type CurrencyCategory
-} from '@/lib/currencies';
-import { useAppSettings } from '@/providers/Providers';
-import { useCurrenciesQuery } from '@/hooks/useRates';
-import { useRate, useRangeRates } from '@/hooks/useRateStore';
+import { motion } from 'framer-motion';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
 import CurrencyChart from '@/components/CurrencyChart';
 import RatesTable from '@/components/RatesTable';
+import { useRangeRates, useRate } from '@/hooks/useRateStore';
+import { useCurrenciesQuery } from '@/hooks/useRates';
+import type { HistoryResponse } from '@/lib/api';
+import {
+	ALL_CATEGORIES,
+	CATEGORY_ICONS,
+	CATEGORY_LABELS_EN,
+	CATEGORY_LABELS_ES,
+	CATEGORY_LABELS_JA,
+	CATEGORY_LABELS_RU,
+	CURRENCY_FLAGS,
+	CURRENCY_SYMBOLS,
+	type CurrencyCategory,
+	getCurrencyCategory,
+	getCurrencyName,
+	matchesCurrencySearch
+} from '@/lib/currencies';
+import { useAppSettings } from '@/providers/Providers';
 
 /* ── Layout ──────────────────────────────── */
 
@@ -391,7 +391,7 @@ const ViewBtn = styled.button<{ $active: boolean }>`
 /* ── Component ──────────────────────────────── */
 
 const CalculatorView = () => {
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 	const { settings } = useAppSettings();
 	const [amount, setAmount] = useState('1');
 	const [fromCurrency, setFromCurrency] = useState(settings.baseCurrency);
@@ -432,7 +432,7 @@ const CalculatorView = () => {
 	const reverseRate = rate != null && rate !== 0 ? 1 / rate : null;
 	const result = useMemo(() => {
 		const num = parseFloat(amount);
-		if (isNaN(num) || rate == null) return null;
+		if (Number.isNaN(num) || rate == null) return null;
 		return num * rate;
 	}, [amount, rate]);
 
@@ -557,7 +557,7 @@ const CalculatorView = () => {
 	const formatSelectedDate = (dateStr: string): string => {
 		if (!dateStr) return '';
 		try {
-			const d = new Date(dateStr + 'T00:00:00');
+			const d = new Date(`${dateStr}T00:00:00`);
 			return d.toLocaleDateString(
 				lang === 'ru' ? 'ru-RU' : lang === 'ja' ? 'ja-JP' : lang === 'es' ? 'es-ES' : 'en-US',
 				{

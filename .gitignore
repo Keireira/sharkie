@@ -1,6 +1,19 @@
 target/
-.env
+*.env
+!*.env.example
 trash/
 
 .DS_Store
 .claude
+.agents
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Docs
+docs/node_modules/
+docs/.next/
+docs/out/
+docs/.source/

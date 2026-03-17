@@ -1,25 +1,23 @@
 'use client';
 
-import React, { useMemo, useState, useCallback } from 'react';
-import styled, { keyframes, useTheme } from 'styled-components';
 import { motion } from 'framer-motion';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-	ResponsiveContainer,
-	AreaChart,
 	Area,
-	XAxis,
-	YAxis,
-	CartesianGrid,
-	Tooltip,
+	AreaChart,
 	Brush,
-	ReferenceLine
+	CartesianGrid,
+	ReferenceLine,
+	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis
 } from 'recharts';
+import styled, { keyframes, useTheme } from 'styled-components';
 import type { HistoryResponse } from '@/lib/api';
+import { CURRENCY_FLAGS, CURRENCY_PALETTE, formatRate as fmtRate, getCurrencyName } from '@/lib/currencies';
 import type { AppTheme } from '@/lib/theme';
-import { CURRENCY_FLAGS, getCurrencyName, formatRate as fmtRate } from '@/lib/currencies';
-
-import { CURRENCY_PALETTE } from '@/lib/currencies';
 
 const CHART_COLORS = CURRENCY_PALETTE;
 

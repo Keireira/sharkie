@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
 import styled from 'styled-components';
-import { useAppSettings, type ViewMode } from '@/providers/Providers';
+import { useAppSettings } from '@/providers/Providers';
 
 const Bar = styled.header`
 	position: fixed;

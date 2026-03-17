@@ -1,25 +1,39 @@
-# Stage 1: Build Stage
-FROM rust:1.93-bookworm AS build-stage
+# --- Build ---
+FROM rust:1.93-bookworm AS builder
 
-RUN apt update && \
-  apt install -y --no-install-recommends \
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
   libssl-dev \
   musl-tools \
-  libpq-dev
+  libpq-dev && \
+  rm -rf /var/lib/apt/lists/*
 
-COPY . /app
 WORKDIR /app
 
+# Cache dependencies separately from application code
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo build --release && rm -rf src
+
+# Build the actual application
+COPY . .
+RUN touch src/main.rs
+ENV SQLX_OFFLINE=true
 RUN cargo build --release
 
-# Stage 2
+# --- Runtime ---
 FROM debian:bookworm-slim
 
-COPY ./migrations ./migrations
-RUN apt-get update && apt-get -y install ca-certificates libssl-dev curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+  ca-certificates \
+  libssl-dev \
+  libpq5 \
+  curl && \
+  rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install libpq5 -y
-COPY --from=build-stage /app/target/release/sharkie /usr/bin
+COPY --from=builder /app/target/release/sharkie /usr/bin/sharkie
+COPY --from=builder /app/migrations /migrations
 
-CMD ["sharkie"]
 EXPOSE 3000
+CMD ["sharkie"]

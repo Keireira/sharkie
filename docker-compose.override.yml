@@ -1,0 +1,6 @@
+# Local development overrides — exposes DB port to host
+# This file is auto-loaded by `docker compose` alongside docker-compose.yml
+services:
+  db:
+    ports:
+      - 127.0.0.1:5432:5432

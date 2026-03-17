@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+
 import { DEFAULT_FAVORITES } from '@/lib/currencies';
 
 export interface Settings {
@@ -40,7 +41,7 @@ const loadSettings = (): Settings => {
 			};
 		}
 	} catch {
-		// ignore
+		// ignore corrupted storage
 	}
 	return defaultSettings;
 };
@@ -54,17 +55,17 @@ export const useSettings = () => {
 		setIsLoaded(true);
 	}, []);
 
-	const setSettings = useCallback((update: Partial<Settings>) => {
+	const setSettings = (update: Partial<Settings>) => {
 		setSettingsState((prev) => {
 			const next = { ...prev, ...update };
 			try {
 				localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
 			} catch {
-				// ignore
+				// ignore full storage
 			}
 			return next;
 		});
-	}, []);
+	};
 
 	return { settings, setSettings, isLoaded };
 };

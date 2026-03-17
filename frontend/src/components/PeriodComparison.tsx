@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { HistoryResponse } from '@/lib/api';
+import styled from 'styled-components';
 import type { CompareMode } from '@/hooks/useRates';
-import { CURRENCY_FLAGS, getCurrencyName, formatRate } from '@/lib/currencies';
+import type { HistoryResponse } from '@/lib/api';
+import { CURRENCY_FLAGS, formatRate, getCurrencyName } from '@/lib/currencies';
 
 const COMPARE_MODES: CompareMode[] = ['week', 'month', 'quarter', 'halfYear', 'year'];
 

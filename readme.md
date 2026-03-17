@@ -3,157 +3,100 @@
 [![GitHub License](https://img.shields.io/github/license/Keireira/sharkie?&style=flat-square)](https://github.com/Keireira/sharkie/blob/master/LICENSE)
 [![Registry](https://img.shields.io/github/deployments/Keireira/sharkie/registry?label=registry&style=flat-square)](https://github.com/Keireira/sharkie/deployments/registry)
 [![Production](https://img.shields.io/github/deployments/Keireira/sharkie/production?label=production&style=flat-square)](https://github.com/Keireira/sharkie/deployments/production)
-![language count](https://img.shields.io/github/languages/count/Keireira/sharkie/)
 ![GitHub repo size](https://img.shields.io/github/repo-size/Keireira/sharkie)
-![GitHub language count](https://img.shields.io/github/languages/count/Keireira/sharkie)
 ![GitHub last commit](https://img.shields.io/github/last-commit/keireira/sharkie)
 
-## Front-End part
+Real-time currency exchange rates dashboard. Tracks 150+ fiat currencies and 12 cryptocurrencies with historical data from 2000.
 
-FE part was written with an assistance of claude.ai (opus-4.6) since this is just a prototype without any value, and I don't want to bother myself with this shit.
+## Stack
 
-## To-Do
+| Layer | Tech |
+|-------|------|
+| Backend | Rust (Axum, SQLx, Tokio, Tracing) |
+| Frontend | Next.js 16, React 19, TypeScript, styled-components |
+| Database | PostgreSQL 17 |
+| Linting | Biome 2 (frontend), Clippy (backend) |
+| Deploy | Docker Compose, GitHub Actions |
 
-- [x] Add support of other `base` currencies (recalc on the fly)
-- [x] Add range with `from` and `to` to the `/history` endpoint
-- [x] Automatically upload sql dumps of `exchange_rates` table to some external resource
-- [x] Some stub for the index page?
-- [ ] Requests limiter
-- [ ] Refactor that shitcode
-
-## API Reference
-
-Base URL: `http://localhost:3000`
-
-## Crontab
-
-```
-crontab -e
-
-0 3 * * * /path/to/backup.sh && find $HOME/sharkie_backups -name "*.dump" -mtime +30 -delete
-```
-
-### Health Check
-
-```
-GET /health
-```
-
-Returns the server status.
-
-**Response**
-
-```json
-{
-  "status": "ok",
-  "message": "Sharkie is running"
-}
-```
-
----
-
-### Get Historical Rates
-
-```
-GET /history
-```
-
-Returns exchange rates for specified dates. Base currency is always **USD**.
-
-**Query Parameters**
-
-| Parameter    | Type   | Required | Description                                      |
-| ------------ | ------ | -------- | ------------------------------------------------ |
-| `date`       | string | Yes      | Comma-separated dates in `YYYY-MM-DD` format     |
-| `currencies` | string | No       | Comma-separated currency codes (e.g., `EUR,KZT`) |
-
-**Example Requests**
-
-Single date, all currencies:
-
-```
-GET /history?date=2024-01-15
-```
-
-Multiple dates, specific currencies:
-
-```
-GET /history?date=2024-01-15,2024-01-16&currencies=EUR,RUB,KZT
-```
-
-**Success Response**
-
-```json
-{
-  "base": "USD",
-  "data": [
-    {
-      "date": "2024-01-15",
-      "rates": {
-        "RUB": 87.96,
-        "KZT": 451.3394,
-        "EUR": 0.913585
-      }
-    },
-    {
-      "date": "2024-01-16",
-      "rates": {
-        "EUR": 0.91928,
-        "KZT": 453.1397,
-        "RUB": 87.96
-      }
-    }
-  ]
-}
-```
-
-**Error Responses**
-
-| Code | Description                             |
-| ---- | --------------------------------------- |
-| 400  | Invalid date format or empty parameters |
-| 404  | No data found for requested dates       |
-| 413  | Response exceeds 512 KB limit           |
-| 500  | Internal server error                   |
-
-**Error Response Format**
-
-```json
-{
-  "status": "error",
-  "code": 400,
-  "message": "Invalid date format: 'invalid'. Use YYYY-MM-DD"
-}
-```
-
-## Running
-
-### Environment Variables
-
-| Variable           | Description                  |
-| ------------------ | ---------------------------- |
-| `DATABASE_URL`     | PostgreSQL connection string |
-| `CURRENCY_API_URL` | <https://xxx.zzz/api/>       |
-| `CURRENCY_API_KEY` | API key                      |
-
-### Docker
+## Quick Start
 
 ```bash
-docker-compose up
+# Copy env files
+cp sharkie.env.example sharkie.env        # edit CURRENCY_API_KEY
+cp sharkie_db.env.example sharkie_db.env
+cp sharkie.local.env.example sharkie.local.env
+
+# Start everything (DB + restore + backend + frontend)
+make dev
 ```
 
-### Local Development
+See `make help` for all commands.
 
-```bash
-cargo run
+## Environment Files
+
+| File | Purpose | Used by |
+|------|---------|---------|
+| `sharkie.env` | API keys, DB URL (`@db`) | Docker Compose `app` service, `cargo run` fallback |
+| `sharkie_db.env` | Postgres credentials | Docker Compose `db` service |
+| `sharkie.local.env` | Local overrides (`@localhost`) | `cargo run` (loaded first, wins) |
+
+All `*.env` are gitignored. Only `*.env.example` are committed.
+
+## API
+
+Base: `http://localhost:3000` (dev) / `https://sharkie.uha.app` (prod)
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /health` | Server + DB status |
+| `GET /currencies` | List available currency codes |
+| `GET /history?from=&to=&currencies=&base=` | Historical rates (date range) |
+| `GET /history?date=&currencies=&base=` | Historical rates (specific dates) |
+
+Date range limit: 5 years. Response limit: 512 KB.
+
+## Project Structure
+
 ```
+src/                    Rust backend (Axum)
+├── routes/             HTTP handlers
+├── services/           Business logic (backfill, scheduler)
+├── config.rs           Env configuration
+├── error.rs            Unified ApiError
+├── models.rs           DB models + API DTOs
+└── state.rs            Shared app state
 
-Server starts on `http://0.0.0.0:3000`
+frontend/               Next.js 16 (static export)
+├── src/app/            App Router pages
+├── src/components/     React components
+├── src/hooks/          Custom hooks
+├── src/lib/            Utilities, API client, i18n, theme
+└── biome.json          Linter/formatter config
+
+docs/                   Documentation (Fumadocs)
+scripts/                Dev scripts (DB restore)
+migrations/             SQLx migrations
+rules/                  Coding standards
+```
 
 ## Background Tasks
 
-- **Startup**: checks for missing dates from 2000-01-01 to yesterday and backfills them from external API
-- **Every 4 hours**: fetches today's exchange rates if not already present
+- **Startup**: backfills missing dates from 2000-01-01 to yesterday
+- **Scheduled**: fetches today's rates at 00:05, 04:00, 08:00, 12:00, 16:00, 20:00, 23:55 UTC
+
+## Documentation
+
+Full docs: `make dev-docs` then open `http://localhost:3000/docs`
+
+## Crontab (production)
+
+```
+0 3 * * * /path/to/backup.sh && find $HOME/sharkie_backups -name "*.dump" -mtime +30 -delete
+```
+
+## Frontend
+
+The frontend was built with assistance of claude.ai (opus-4.6) as a prototype.
 
 ## License
 

@@ -1,25 +1,25 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import styled from 'styled-components';
+import { format, subMonths, subWeeks, subYears } from 'date-fns';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAppSettings } from '@/providers/Providers';
-import { useHealthQuery, useCurrenciesQuery } from '@/hooks/useRates';
+import styled from 'styled-components';
+import { useCurrenciesQuery, useHealthQuery } from '@/hooks/useRates';
 import {
-	CURRENCY_FLAGS,
-	getCurrencyName,
-	matchesCurrencySearch,
-	getCurrencyCategory,
 	ALL_CATEGORIES,
-	CATEGORY_LABELS_EN,
-	CATEGORY_LABELS_RU,
-	CATEGORY_LABELS_JA,
-	CATEGORY_LABELS_ES,
 	CATEGORY_ICONS,
-	type CurrencyCategory
+	CATEGORY_LABELS_EN,
+	CATEGORY_LABELS_ES,
+	CATEGORY_LABELS_JA,
+	CATEGORY_LABELS_RU,
+	CURRENCY_FLAGS,
+	type CurrencyCategory,
+	getCurrencyCategory,
+	getCurrencyName,
+	matchesCurrencySearch
 } from '@/lib/currencies';
-import { format, subWeeks, subMonths, subYears } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useAppSettings } from '@/providers/Providers';
 
 const SIDEBAR_WIDTH = 260;
 
@@ -146,11 +146,13 @@ const HealthDot = styled.div<{ $status: 'online' | 'offline' | 'connecting' }>`
 				: theme.colors.danger};
 	box-shadow: 0 0 6px
 		${({ $status, theme }) =>
-			($status === 'online'
-				? theme.colors.success
-				: $status === 'connecting'
-					? theme.colors.warning
-					: theme.colors.danger) + '80'};
+			`${
+				$status === 'online'
+					? theme.colors.success
+					: $status === 'connecting'
+						? theme.colors.warning
+						: theme.colors.danger
+			}80`};
 `;
 
 /* ── Base currency ─────────────────────── */

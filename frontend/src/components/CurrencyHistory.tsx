@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import styled from 'styled-components';
 import type { HistoryResponse } from '@/lib/api';
-import { CURRENCY_FLAGS, getCurrencyName, formatRate as fmtRate } from '@/lib/currencies';
+import { CURRENCY_FLAGS, formatRate as fmtRate, getCurrencyName } from '@/lib/currencies';
 
 const CARD_COLORS = [
 	'#6366f1',
@@ -266,7 +266,7 @@ const CurrencyHistory = ({ data, currencies }: CurrencyHistoryProps) => {
 			const min = Math.min(...values);
 			const max = Math.max(...values);
 			const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
-			const variance = values.reduce((sum, v) => sum + Math.pow(v - avg, 2), 0) / values.length;
+			const variance = values.reduce((sum, v) => sum + (v - avg) ** 2, 0) / values.length;
 			const stdDev = Math.sqrt(variance);
 			const volatility = avg !== 0 ? (stdDev / avg) * 100 : 0;
 

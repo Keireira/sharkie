@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, createContext, useContext, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from 'styled-components';
+import type React from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
-import { darkTheme, lightTheme } from '@/lib/theme';
-import { useSettings, type Settings } from '@/hooks/useSettings';
+import { ThemeProvider } from 'styled-components';
+import { type Settings, useSettings } from '@/hooks/useSettings';
 import { fetchHealth } from '@/lib/api';
 import i18n from '@/lib/i18n';
+import { darkTheme, lightTheme } from '@/lib/theme';
 
 export type ViewMode = 'dashboard' | 'calculator';
 
