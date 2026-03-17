@@ -16,7 +16,8 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::set_header::SetResponseHeaderLayer;
 use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
-use tracing::info;
+use sqlx::PgPool;
+use tracing::{info, warn};
 
 use crate::config::Config;
 use crate::state::AppState;
@@ -39,11 +40,7 @@ async fn main() {
 
     let config = Config::from_env();
 
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&config.database_url)
-        .await
-        .expect("failed to connect to database");
+    let pool = connect_with_retry(&config.database_url, 5).await;
 
     sqlx::migrate!("./migrations")
         .run(&pool)
@@ -51,6 +48,9 @@ async fn main() {
         .expect("failed to run migrations");
 
     info!("database connected and migrations applied");
+
+    // Spawn pool health monitor (SELECT 1 every 30s)
+    tokio::spawn(pool_health_monitor(pool.clone()));
 
     let http_client = reqwest::Client::new();
     let state = AppState {
@@ -174,6 +174,64 @@ async fn main() {
     .with_graceful_shutdown(shutdown_signal())
     .await
     .expect("failed to start server");
+}
+
+/// Attempt to connect to the database with exponential backoff.
+/// Retries `max_retries` times (1 s, 2 s, 4 s, …) before panicking.
+async fn connect_with_retry(url: &str, max_retries: u32) -> PgPool {
+    let mut delay = Duration::from_secs(1);
+
+    for attempt in 1..=max_retries {
+        match PgPoolOptions::new()
+            .max_connections(5)
+            .acquire_timeout(Duration::from_secs(5))
+            .connect(url)
+            .await
+        {
+            Ok(pool) => return pool,
+            Err(e) if attempt < max_retries => {
+                warn!(
+                    attempt,
+                    max_retries,
+                    error = %e,
+                    retry_in_secs = delay.as_secs(),
+                    "database connection failed, retrying"
+                );
+                tokio::time::sleep(delay).await;
+                delay *= 2;
+            }
+            Err(e) => {
+                panic!("failed to connect to database after {max_retries} attempts: {e}");
+            }
+        }
+    }
+    unreachable!()
+}
+
+/// Periodically runs `SELECT 1` to verify pool health.
+/// Logs a warning on failure and an info message when connectivity is restored.
+async fn pool_health_monitor(pool: PgPool) {
+    let mut healthy = true;
+
+    loop {
+        tokio::time::sleep(Duration::from_secs(30)).await;
+
+        match sqlx::query_scalar::<_, i32>("SELECT 1")
+            .fetch_one(&pool)
+            .await
+        {
+            Ok(_) => {
+                if !healthy {
+                    info!("database connectivity restored");
+                    healthy = true;
+                }
+            }
+            Err(e) => {
+                warn!(error = %e, "database health check failed");
+                healthy = false;
+            }
+        }
+    }
 }
 
 async fn shutdown_signal() {
