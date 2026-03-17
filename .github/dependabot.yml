@@ -12,6 +12,8 @@ updates:
     groups:
       security:
         applies-to: security-updates
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "*"
         update-types:
@@ -29,6 +31,8 @@ updates:
     groups:
       security:
         applies-to: security-updates
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "*"
         update-types:
@@ -46,6 +50,8 @@ updates:
     groups:
       security:
         applies-to: security-updates
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "*"
         update-types:
