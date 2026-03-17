@@ -63,7 +63,7 @@ The server handles SIGTERM and Ctrl+C signals, allowing in-flight requests to co
 
 ### Response Size Limits
 
-API responses are capped at 512 KB to prevent memory abuse from overly broad queries.
+API responses are capped at 1 MB to prevent memory abuse from overly broad queries.
 
 ## Request Tracing
 
@@ -102,4 +102,4 @@ All API calls go through Nginx's `/api/proxy/` reverse proxy (behind Cloudflare)
 
 - [ ] Set `ALLOWED_ORIGINS` to specific domains in production
 - [ ] Add Content-Security-Policy headers
-- [ ] Set up monitoring for 4xx/5xx spikes and rate limit hits
+- [x] Set up monitoring for 4xx/5xx spikes and rate limit hits (Prometheus metrics at `/metrics` + alerting rules in `prometheus/alerts.yml`)

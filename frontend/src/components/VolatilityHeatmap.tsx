@@ -381,6 +381,7 @@ const VolatilityHeatmap = ({ data, currencies }: VolatilityHeatmapProps) => {
 							const hex = CURRENCY_PALETTE[i % CURRENCY_PALETTE.length];
 							const [r, g, b] = hexToRgb(hex);
 							const opacity = 0.15 + (i / 6) * 0.8;
+							// biome-ignore lint/suspicious/noArrayIndexKey: static list
 							return <LegendSwatch key={i} $bg={`rgba(${r}, ${g}, ${b}, ${opacity.toFixed(2)})`} $hatched={i < 2} />;
 						})}
 					</LegendSwatches>

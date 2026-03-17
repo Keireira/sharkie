@@ -139,6 +139,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
 		<html lang="en" className={inter.variable} suppressHydrationWarning>
 			<head>
 				<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: Next.js JSON-LD structured data pattern */}
 				<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 			</head>
 			<body>

@@ -36,9 +36,10 @@ sharkie/
 │   ├── config.rs           # Environment configuration
 │   ├── error.rs            # Unified ApiError type
 │   ├── state.rs            # Shared AppState (pool, config, http client)
-│   ├── models.rs           # DB models and API DTOs
+│   ├── models.rs           # DB models, API DTOs, OpenAPI schemas
+│   ├── telemetry.rs        # Prometheus metrics, HTTP middleware, pool monitor
 │   ├── routes/             # HTTP handlers
-│   │   ├── mod.rs          # Router assembly
+│   │   ├── mod.rs          # Router assembly + OpenAPI doc
 │   │   ├── health.rs       # GET /health
 │   │   ├── currencies.rs   # GET /currencies
 │   │   └── history.rs      # GET /history
@@ -56,6 +57,7 @@ sharkie/
 │   ├── biome.json          # Biome linter/formatter config
 │   └── nginx.conf          # Production Nginx config
 ├── docs/                   # This documentation (Fumadocs)
+├── prometheus/             # Alerting rules (alerts.yml)
 ├── docker-compose.yml      # Production orchestration
 ├── Dockerfile              # Backend Docker build
 ├── Makefile                # Development commands
@@ -82,6 +84,9 @@ sharkie/
 - **Static export** — the frontend is built as static HTML/JS and served by Nginx, avoiding Node.js in production
 - **USD normalization** — all rates are stored relative to USD; conversion to other bases is computed at query time
 - **Single reqwest::Client** — shared HTTP client across the application (not created per request)
+- **Connection resilience** — DB connection retries with exponential backoff on startup; pool health monitored every 30s
+- **Prometheus monitoring** — request metrics, DB pool gauges, backfill progress, and error counters exported at `/metrics` with alerting rules in `prometheus/alerts.yml`
+- **OpenAPI spec** — auto-generated via `utoipa` and served at `/openapi.json`
 - **Graceful shutdown** — the server handles SIGTERM/Ctrl+C cleanly
 - **CORS** — configurable via `ALLOWED_ORIGINS` environment variable
 - **Tracing** — structured logging with `tracing` crate, configurable via `RUST_LOG`

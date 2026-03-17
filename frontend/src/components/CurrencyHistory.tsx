@@ -229,8 +229,15 @@ const TooltipValue = styled.div`
 	color: ${({ theme }) => theme.colors.text};
 `;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function HistoryTooltip({ active, payload, label }: any) {
+function HistoryTooltip({
+	active,
+	payload,
+	label
+}: {
+	active?: boolean;
+	payload?: Array<{ value: number }>;
+	label?: string;
+}) {
 	if (!active || !payload?.length) return null;
 
 	return (

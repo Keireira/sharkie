@@ -61,6 +61,15 @@
     }
   ],
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/.next", "!**/out", "!**/public", "!**/dist", "!**/build"]
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/out",
+      "!**/public",
+      "!**/dist",
+      "!**/build",
+      "!next-env.d.ts"
+    ]
   }
 }

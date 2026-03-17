@@ -15,14 +15,15 @@ The backend is a Rust API server built with Axum 0.8 and SQLx 0.8, running on To
 src/
 ├── main.rs          # Entry point: bootstrap, middleware stack, graceful shutdown
 ├── config.rs        # Config struct loaded from environment variables
-├── error.rs         # Unified ApiError enum with IntoResponse
+├── error.rs         # Unified ApiError enum with IntoResponse + error counters
 ├── state.rs         # AppState: DB pool, config, HTTP client
-├── models.rs        # DB models (ExchangeRate) and API DTOs
+├── models.rs        # DB models, API DTOs, OpenAPI schemas (utoipa)
+├── telemetry.rs     # Prometheus metrics setup, HTTP middleware, pool monitor
 ├── routes/
-│   ├── mod.rs       # Router assembly + compression layer
+│   ├── mod.rs       # Router assembly, OpenAPI doc, compression layer
 │   ├── health.rs    # GET /health (DB connectivity check)
 │   ├── currencies.rs # GET /currencies
-│   └── history.rs   # GET /history (date parsing, TZ clamping, filtering, rebasing, timing)
+│   └── history.rs   # GET /history (date parsing, TZ clamping, filtering, rebasing, pagination)
 └── services/
     ├── mod.rs
     └── rates.rs     # Backfill, daily fetch, scheduler, batch insert
@@ -66,6 +67,7 @@ Middleware is applied in `main.rs` as a layered tower stack. Order (outermost fi
 
 | Layer | Crate | Purpose |
 |-------|-------|---------|
+| **Prometheus metrics** | `metrics` | Request count + latency histograms (outermost — captures everything) |
 | **Timeout** | `tower-http::timeout` | 30s per-request deadline → 408 |
 | **Body limit** | `tower-http::limit` | 1 MB request body cap |
 | **Rate limiting** | `tower_governor` | 60 req/min per IP (SmartIpKeyExtractor) |
@@ -118,10 +120,17 @@ All responses are compressed with gzip or brotli via `tower-http::compression`, 
 
 Clients in timezones ahead of UTC (e.g., GMT+10) may request dates that are "today" for them but "tomorrow" for the server. To prevent 404 errors, the server clamps all future dates to today (UTC). This ensures the latest available data is always returned.
 
+## Database Connection Resilience
+
+On startup, the backend retries the database connection with exponential backoff (1s, 2s, 4s, 8s, 16s — up to 5 attempts) before panicking. The pool also has a 5-second `acquire_timeout`.
+
 ## Background Tasks
 
+### Pool Monitor (`telemetry::pool_monitor`)
+Runs every 30 seconds. Executes `SELECT 1` as a health probe and exports DB pool gauges (`db_pool_size`, `db_pool_idle`, `db_pool_active`, `db_pool_healthy`) to Prometheus. Logs warnings on failure and info when connectivity is restored.
+
 ### Backfill (`backfill_missing_rates`)
-Runs on startup. Iterates from 2000-01-01 to yesterday and fetches any missing dates from the external API.
+Runs on startup. Iterates from 2000-01-01 to yesterday and fetches any missing dates from the external API. Exports `backfill_remaining_dates` gauge and `backfill_dates_total` counter to Prometheus.
 
 ### Daily Updater (`daily_rate_updater`)
 Background Tokio task that:
@@ -129,8 +138,20 @@ Background Tokio task that:
 2. Sleeps until the next scheduled UTC time
 3. Schedule: 00:05, 04:00, 08:00, 12:00, 16:00, 20:00, 23:55
 
+Increments `rate_fetch_failures_total` counter on failure.
+
 ### Batch Insert
 Both backfill and daily fetch use a single parameterized `INSERT ... ON CONFLICT DO UPDATE` query for efficiency.
+
+## Monitoring
+
+Prometheus metrics are exposed at `GET /metrics` via the `metrics` + `metrics-exporter-prometheus` crates. The HTTP metrics middleware is the outermost layer, capturing all requests including rate-limited and timed-out ones. Path labels are normalized to known routes to prevent cardinality explosion.
+
+Alert rules are defined in `prometheus/alerts.yml` covering: 5xx spikes, DB pool exhaustion, backfill failures/stalls, rate limit spikes, and rate fetch failures.
+
+## OpenAPI
+
+The API spec is generated at compile time via `utoipa` and served at `GET /openapi.json`. All route handlers are annotated with `#[utoipa::path]`, and models derive `ToSchema` / `IntoParams`.
 
 ## Database
 

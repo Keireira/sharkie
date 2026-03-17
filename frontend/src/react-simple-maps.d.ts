@@ -34,8 +34,7 @@ declare module 'react-simple-maps' {
 	}
 
 	interface GeographyProps {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		geography: any;
+		geography: unknown;
 		fill?: string;
 		stroke?: string;
 		strokeWidth?: number;

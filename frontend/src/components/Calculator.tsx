@@ -783,6 +783,7 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 						<DateRow>
 							<DateButton style={{ position: 'relative' }} onClick={handleDateClick}>
 								<svg
+									aria-hidden="true"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"

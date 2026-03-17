@@ -26,15 +26,16 @@ description: Planned improvements and known issues
 | CORS (configurable via env)                             | Done   |
 | Dependabot (security-only updates)                      | Done   |
 | CI pipeline (clippy + biome + audit)                    | Done   |
+| DB connection retry with exponential backoff            | Done   |
+| Pool health monitoring (`SELECT 1` every 30s)           | Done   |
+| Pagination (`limit`/`offset` on `/history`)             | Done   |
+| Prometheus metrics endpoint (`/metrics`)                | Done   |
+| Prometheus alerting rules (`prometheus/alerts.yml`)     | Done   |
+| OpenAPI spec via utoipa (`/openapi.json`)               | Done   |
 
 ---
 
 ## Priority 1 — Reliability
-
-### Database Connection Resilience
-
-- Add connection retry logic on startup (currently panics if DB is unavailable)
-- Add pool health monitoring with periodic `SELECT 1`
 
 ### Backfill Error Recovery
 
@@ -48,14 +49,6 @@ description: Planned improvements and known issues
 ---
 
 ## Priority 2 — API Improvements
-
-### Pagination
-
-Add `limit` and `offset` parameters to `/history` with clamped max (e.g., `limit` max 366 days per request):
-
-```
-GET /history?from=2024-01-01&to=2024-12-31&limit=100&offset=0
-```
 
 ### API Versioning
 
@@ -72,12 +65,6 @@ Add CSP headers with nonce-based script policy.
 ---
 
 ## Priority 3 — Infrastructure
-
-### Monitoring
-
-- Add Prometheus metrics endpoint (`/metrics`) via `metrics` + `axum-prometheus`
-- Track: request count, latency histograms, error rates, DB pool stats, backfill progress
-- Alert on: 5xx spike, DB pool exhaustion, backfill failures, rate limit hits
 
 ### CI Pipeline Enhancement
 
@@ -106,10 +93,6 @@ Add CSP headers with nonce-based script policy.
 - **Backend**: Add unit tests for date parsing, rate rebasing logic
 - **Frontend**: Add Vitest + React Testing Library for component tests
 - **E2E**: Add Playwright tests for critical user flows
-
-### Documentation
-
-- Add OpenAPI/Swagger spec for the API (via `utoipa` crate)
 
 ### Local Dev
 

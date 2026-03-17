@@ -645,6 +645,7 @@ const CalculatorView = () => {
 					<DateRow>
 						<DateButton onClick={handleDateClick}>
 							<svg
+								aria-hidden="true"
 								viewBox="0 0 24 24"
 								fill="none"
 								stroke="currentColor"
@@ -718,6 +719,7 @@ const CalculatorView = () => {
 						<ViewToggle>
 							<ViewBtn $active={chartView === 'chart'} onClick={() => setChartView('chart')}>
 								<svg
+									aria-hidden="true"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
@@ -732,6 +734,7 @@ const CalculatorView = () => {
 							</ViewBtn>
 							<ViewBtn $active={chartView === 'table'} onClick={() => setChartView('table')}>
 								<svg
+									aria-hidden="true"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"

@@ -63,6 +63,7 @@ const ChartTableView = ({ data, isLoading, isError, error, chartCurrencies }: Ch
 			<ToggleBar>
 				<ToggleBtn $active={view === 'chart'} onClick={() => setView('chart')}>
 					<svg
+						aria-hidden="true"
 						viewBox="0 0 24 24"
 						fill="none"
 						stroke="currentColor"
@@ -76,6 +77,7 @@ const ChartTableView = ({ data, isLoading, isError, error, chartCurrencies }: Ch
 				</ToggleBtn>
 				<ToggleBtn $active={view === 'table'} onClick={() => setView('table')}>
 					<svg
+						aria-hidden="true"
 						viewBox="0 0 24 24"
 						fill="none"
 						stroke="currentColor"

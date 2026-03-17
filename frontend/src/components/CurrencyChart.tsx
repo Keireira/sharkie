@@ -339,9 +339,14 @@ const CurrencyChart = ({ data, isLoading, isError, error, currencies }: Currency
 		return values.reduce((a, b) => a + b, 0) / values.length;
 	}, [visibleCurrencies, chartData]);
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const CustomTooltip = useCallback(
-		({ active, payload }: any) => {
+		({
+			active,
+			payload
+		}: {
+			active?: boolean;
+			payload?: Array<{ color: string; name: string; value: number; payload?: ChartDataPoint }>;
+		}) => {
 			if (!active || !payload?.length) return null;
 			// Get the data point from payload (recharts attaches it)
 			const dataPoint = payload[0]?.payload as ChartDataPoint | undefined;
@@ -353,6 +358,7 @@ const CurrencyChart = ({ data, isLoading, isError, error, currencies }: Currency
 						const rawRate = dataPoint?.[`_raw_${entry.name}`] as number | undefined;
 						const pctChange = isNormalized ? entry.value : null;
 						return (
+							// biome-ignore lint/suspicious/noArrayIndexKey: static list
 							<TooltipRow key={idx}>
 								<TooltipDot $color={entry.color} />
 								<TooltipFlag>{CURRENCY_FLAGS[entry.name] || ''}</TooltipFlag>
@@ -378,6 +384,7 @@ const CurrencyChart = ({ data, isLoading, isError, error, currencies }: Currency
 			return (
 				<StatusWrap>
 					{Array.from({ length: 5 }).map((_, i) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: static list
 						<SkeletonLine key={i} style={{ width: `${60 + Math.random() * 30}%`, opacity: 1 - i * 0.15 }} />
 					))}
 					<StatusText>{t('chart.loading')}</StatusText>

@@ -25,8 +25,8 @@ dev-db: ## Start PostgreSQL in Docker and wait until ready
 	@until docker compose exec -T db pg_isready -U sharkie -d sharkie > /dev/null 2>&1; do sleep 1; done
 	@echo "Database is ready."
 
-dev-docs: ## Start docs dev server
-	cd docs && pnpm dev
+dev-docs: ## Start docs dev server (port 3333)
+	cd docs && pnpm dev --port 3333
 
 # ─── Build ──────────────────────────────────────────
 

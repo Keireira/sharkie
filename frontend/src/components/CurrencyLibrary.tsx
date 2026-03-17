@@ -526,6 +526,7 @@ function useClickOutside(ref: React.RefObject<HTMLElement | null>, handler: () =
 
 const FilterIcon = () => (
 	<svg
+		aria-hidden="true"
 		width="14"
 		height="14"
 		viewBox="0 0 24 24"
@@ -541,6 +542,7 @@ const FilterIcon = () => (
 
 const SortIcon = () => (
 	<svg
+		aria-hidden="true"
 		width="14"
 		height="14"
 		viewBox="0 0 24 24"
@@ -558,6 +560,7 @@ const SortIcon = () => (
 
 const SearchSvg = () => (
 	<svg
+		aria-hidden="true"
 		width="14"
 		height="14"
 		viewBox="0 0 24 24"
@@ -774,6 +777,7 @@ const CurrencyLibrary = () => {
 									>
 										<TileIcon>
 											<svg
+												aria-hidden="true"
 												width="22"
 												height="22"
 												viewBox="0 0 24 24"
@@ -800,6 +804,7 @@ const CurrencyLibrary = () => {
 									>
 										<TileIcon>
 											<svg
+												aria-hidden="true"
 												width="22"
 												height="22"
 												viewBox="0 0 24 24"
@@ -837,6 +842,7 @@ const CurrencyLibrary = () => {
 									>
 										<TileIcon>
 											<svg
+												aria-hidden="true"
 												width="22"
 												height="22"
 												viewBox="0 0 24 24"

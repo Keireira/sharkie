@@ -566,7 +566,7 @@ const NavIcon = ({ id }: { id: string }) => {
 	switch (id) {
 		case 'controls':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<line x1="4" y1="21" x2="4" y2="14" />
 					<line x1="4" y1="10" x2="4" y2="3" />
 					<line x1="12" y1="21" x2="12" y2="12" />
@@ -580,21 +580,21 @@ const NavIcon = ({ id }: { id: string }) => {
 			);
 		case 'chart':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
 					<polyline points="17 6 23 6 23 12" />
 				</svg>
 			);
 		case 'cards':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
 					<line x1="1" y1="10" x2="23" y2="10" />
 				</svg>
 			);
 		case 'map':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<circle cx="12" cy="12" r="10" />
 					<line x1="2" y1="12" x2="22" y2="12" />
 					<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -602,7 +602,7 @@ const NavIcon = ({ id }: { id: string }) => {
 			);
 		case 'heatmap':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<rect x="3" y="3" width="7" height="7" rx="1" />
 					<rect x="14" y="3" width="7" height="7" rx="1" />
 					<rect x="3" y="14" width="7" height="7" rx="1" />
@@ -611,7 +611,7 @@ const NavIcon = ({ id }: { id: string }) => {
 			);
 		case 'comparison':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<line x1="18" y1="20" x2="18" y2="10" />
 					<line x1="12" y1="20" x2="12" y2="4" />
 					<line x1="6" y1="20" x2="6" y2="14" />
@@ -619,7 +619,7 @@ const NavIcon = ({ id }: { id: string }) => {
 			);
 		case 'table':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
 					<line x1="3" y1="9" x2="21" y2="9" />
 					<line x1="3" y1="15" x2="21" y2="15" />
@@ -629,21 +629,21 @@ const NavIcon = ({ id }: { id: string }) => {
 			);
 		case 'history':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<circle cx="12" cy="12" r="10" />
 					<polyline points="12 6 12 12 16 14" />
 				</svg>
 			);
 		case 'today':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<line x1="12" y1="1" x2="12" y2="23" />
 					<path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
 				</svg>
 			);
 		case 'library':
 			return (
-				<svg {...props} viewBox="0 0 24 24">
+				<svg {...props} viewBox="0 0 24 24" aria-hidden="true">
 					<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
 					<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
 					<line x1="8" y1="7" x2="16" y2="7" />
@@ -821,7 +821,7 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 		<>
 			<LogoArea>
 				<LogoIcon>
-					<svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+					<svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
 						<path d="M3 10 Q1 7 2 4 L5 9 Z" fill="#5B8FA1" />
 						<path d="M3 18 Q1 21 2 24 L5 19 Z" fill="#5B8FA1" />
 						<path d="M5 8 Q10 3 20 5 Q28 7 30 14 Q30 21 22 24 Q14 26 8 22 Q3 18 5 8 Z" fill="#6B9DAF" />
@@ -898,6 +898,7 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 									strokeWidth="2.5"
 									strokeLinecap="round"
 									strokeLinejoin="round"
+									aria-hidden="true"
 								>
 									<polyline points="6 9 12 15 18 9" />
 								</svg>
@@ -982,6 +983,7 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 								strokeWidth="2"
 								strokeLinecap="round"
 								strokeLinejoin="round"
+								aria-hidden="true"
 							>
 								<rect x="4" y="2" width="16" height="20" rx="2" />
 								<line x1="8" y1="6" x2="16" y2="6" />
@@ -1004,6 +1006,7 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 								strokeWidth="2"
 								strokeLinecap="round"
 								strokeLinejoin="round"
+								aria-hidden="true"
 							>
 								<rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
 								<line x1="1" y1="10" x2="23" y2="10" />
@@ -1016,6 +1019,7 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 								strokeWidth="2"
 								strokeLinecap="round"
 								strokeLinejoin="round"
+								aria-hidden="true"
 							>
 								<polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
 								<polyline points="17 6 23 6 23 12" />
@@ -1026,7 +1030,7 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 				</SettingsRow>
 				<SettingsRow>
 					<ToggleBtn onClick={toggleTheme} $active={isDark}>
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
 							{isDark ? (
 								<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
 							) : (
@@ -1046,7 +1050,7 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 						{isDark ? t('sidebar.dark') : t('sidebar.light')}
 					</ToggleBtn>
 					<ToggleBtn onClick={toggleLang}>
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
 							<circle cx="12" cy="12" r="10" />
 							<line x1="2" y1="12" x2="22" y2="12" />
 							<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />

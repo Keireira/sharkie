@@ -252,6 +252,7 @@ const CurrencyCards = ({ data, currencies, chartCurrencies, onToggleChart, isLoa
 				<Grid>
 					{Array.from({ length: count }).map((_, i) => (
 						<SkeletonCard
+							// biome-ignore lint/suspicious/noArrayIndexKey: static list
 							key={i}
 							initial={{ opacity: 0, y: 16 }}
 							animate={{ opacity: 1, y: 0 }}

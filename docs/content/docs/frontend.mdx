@@ -69,6 +69,10 @@ Two themes are available:
 
 Themes are managed through styled-components' `ThemeProvider` and toggled via the sidebar.
 
+## API Integration
+
+The backend serves an OpenAPI 3.1 spec at `/openapi.json`. This can be used to generate a typed API client for the frontend instead of hand-written fetch functions. Tools like `openapi-typescript` or `orval` can consume the spec to produce typed hooks compatible with React Query.
+
 ## State Management
 
 ### Settings (React Context)

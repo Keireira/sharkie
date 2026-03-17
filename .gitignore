@@ -5,7 +5,6 @@ trash/
 
 .DS_Store
 .claude
-.agents
 
 # Frontend
 frontend/node_modules/

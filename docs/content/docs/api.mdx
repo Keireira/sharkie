@@ -7,7 +7,7 @@ description: REST API endpoints and parameters
 
 # API Reference
 
-The Sharkie API provides exchange rate data through three endpoints. All responses are JSON with gzip/brotli compression.
+The Sharkie API provides exchange rate data through several endpoints. All responses are JSON with gzip/brotli compression. An OpenAPI 3.1 spec is available at `/openapi.json`.
 
 ## Base URL
 
@@ -87,6 +87,8 @@ Returns historical exchange rates. Supports date ranges, specific dates, currenc
 | `date` | string | conditional | Comma-separated dates (`YYYY-MM-DD`). Use instead of `from`/`to`. |
 | `currencies` | string | optional | Comma-separated currency codes to filter. |
 | `base` | string | optional | Base currency (default: `USD`). |
+| `limit` | integer | optional | Max days to return, 1–366 (default: `366`). |
+| `offset` | integer | optional | Number of days to skip for pagination (default: `0`). |
 
 Either `from`+`to` or `date` must be provided. Date range maximum is 5 years.
 
@@ -118,11 +120,17 @@ GET /history?date=2024-01-01,2024-06-01,2024-12-01&currencies=EUR
 GET /history?from=2024-01-01&to=2024-01-07&base=EUR&currencies=USD,GBP,JPY
 ```
 
+**Paginated:**
+```
+GET /history?from=2024-01-01&to=2024-12-31&limit=100&offset=0
+```
+
 ### Response
 
 ```json
 {
   "base": "USD",
+  "total": 365,
   "data": [
     {
       "date": "2024-01-01",
@@ -142,7 +150,7 @@ GET /history?from=2024-01-01&to=2024-01-07&base=EUR&currencies=USD,GBP,JPY
 | 400 | Invalid date format, missing parameters, empty currency list, date range exceeds 5 years |
 | 404 | No data found for the given query |
 | 408 | Request timed out (30s limit) |
-| 413 | Response exceeds 512 KB limit |
+| 413 | Response exceeds 1 MB limit |
 | 429 | Rate limit exceeded (60 req/min) |
 | 500 | Internal server error |
 
@@ -168,4 +176,32 @@ retry-after: 1          # (only on 429)
 
 ## Response Size
 
-Responses are capped at 512 KB. If a query would produce a larger response, a 413 error is returned. Use the `currencies` parameter to limit the data set.
+Responses are capped at 1 MB. If a query would produce a larger response, a 413 error is returned. Use the `currencies` parameter to limit the data set.
+
+---
+
+## GET /metrics
+
+Prometheus metrics in text exposition format. Scraped by Prometheus for monitoring and alerting.
+
+**Tracked metrics:**
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `http_requests_total` | counter | Request count by method, path, status |
+| `http_request_duration_seconds` | histogram | Latency by method and path |
+| `http_errors_total` | counter | Error count by HTTP status |
+| `db_pool_size` | gauge | Total connections in pool |
+| `db_pool_idle` | gauge | Idle connections |
+| `db_pool_active` | gauge | Active connections |
+| `db_pool_healthy` | gauge | 1 if `SELECT 1` succeeds, 0 otherwise |
+| `backfill_remaining_dates` | gauge | Dates still being backfilled |
+| `backfill_dates_total` | counter | Dates successfully backfilled |
+| `backfill_failures_total` | counter | Backfill task failures |
+| `rate_fetch_failures_total` | counter | Daily rate fetch failures |
+
+---
+
+## GET /openapi.json
+
+Returns the OpenAPI 3.1 specification for the API. Can be imported into tools like Swagger UI, Redoc, or Postman.

@@ -234,17 +234,20 @@ const RatesTable = ({ data, currencies, isLoading }: RatesTableProps) => {
 									<SkeletonBar $w={60} />
 								</SkeletonCell>
 								{Array.from({ length: skelCols }).map((_, i) => (
+									// biome-ignore lint/suspicious/noArrayIndexKey: static list
 									<SkeletonCell key={i}>
 										<SkeletonBar $w={40} />
 									</SkeletonCell>
 								))}
 							</SkeletonRow>
 							{Array.from({ length: skelRows }).map((_, ri) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: static list
 								<SkeletonRow key={ri}>
 									<SkeletonCell $first>
 										<SkeletonBar $w={75} />
 									</SkeletonCell>
 									{Array.from({ length: skelCols }).map((_, ci) => (
+										// biome-ignore lint/suspicious/noArrayIndexKey: static list
 										<SkeletonCell key={ci}>
 											<SkeletonBar $w={55 + (ci % 3) * 8} />
 										</SkeletonCell>

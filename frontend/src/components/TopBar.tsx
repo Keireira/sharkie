@@ -122,6 +122,7 @@ const TopBar = () => {
 			<ViewToggleBtn $active={viewMode === 'dashboard'} onClick={toggleView} aria-label="Toggle view">
 				{viewMode === 'calculator' ? (
 					<svg
+						aria-hidden="true"
 						viewBox="0 0 24 24"
 						fill="none"
 						stroke="currentColor"
@@ -134,6 +135,7 @@ const TopBar = () => {
 					</svg>
 				) : (
 					<svg
+						aria-hidden="true"
 						viewBox="0 0 24 24"
 						fill="none"
 						stroke="currentColor"

@@ -5,8 +5,8 @@ use axum::{
 };
 use serde_json::json;
 
-/// Maximum response body size (512 KB).
-pub const MAX_RESPONSE_SIZE: usize = 512 * 1024;
+/// Maximum response body size (1 MB).
+pub const MAX_RESPONSE_SIZE: usize = 1024 * 1024;
 
 /// Unified API error type.
 #[derive(Debug)]

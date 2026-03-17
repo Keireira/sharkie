@@ -12,7 +12,7 @@ Real-time currency exchange rates dashboard. Tracks 150+ fiat currencies and 12 
 
 | Layer | Tech |
 |-------|------|
-| Backend | Rust (Axum, SQLx, Tokio, Tracing) |
+| Backend | Rust (Axum, SQLx, Tokio, Tracing, Prometheus) |
 | Frontend | Next.js 16, React 19, TypeScript, styled-components |
 | Database | PostgreSQL 17 |
 | Linting | Biome 2 (frontend), Clippy (backend) |
@@ -50,10 +50,12 @@ Base: `http://localhost:3000` (dev) / `https://sharkie.uha.app` (prod)
 |----------|-------------|
 | `GET /health` | Server + DB status |
 | `GET /currencies` | List available currency codes |
-| `GET /history?from=&to=&currencies=&base=` | Historical rates (date range) |
-| `GET /history?date=&currencies=&base=` | Historical rates (specific dates) |
+| `GET /history?from=&to=&currencies=&base=&limit=&offset=` | Historical rates (date range) |
+| `GET /history?date=&currencies=&base=&limit=&offset=` | Historical rates (specific dates) |
+| `GET /metrics` | Prometheus metrics |
+| `GET /openapi.json` | OpenAPI 3.1 specification |
 
-Date range limit: 5 years. Response limit: 512 KB.
+Date range limit: 5 years. Pagination: `limit` max 366, default 366. Response limit: 1 MB.
 
 ## Project Structure
 
@@ -64,7 +66,8 @@ src/                    Rust backend (Axum)
 ├── config.rs           Env configuration
 ├── error.rs            Unified ApiError
 ├── models.rs           DB models + API DTOs
-└── state.rs            Shared app state
+├── state.rs            Shared app state
+└── telemetry.rs        Prometheus metrics setup + pool monitor
 
 frontend/               Next.js 16 (static export)
 ├── src/app/            App Router pages
@@ -74,6 +77,7 @@ frontend/               Next.js 16 (static export)
 └── biome.json          Linter/formatter config
 
 docs/                   Documentation (Fumadocs)
+prometheus/             Alerting rules (alerts.yml)
 scripts/                Dev scripts (DB restore)
 migrations/             SQLx migrations
 rules/                  Coding standards
@@ -81,12 +85,13 @@ rules/                  Coding standards
 
 ## Background Tasks
 
-- **Startup**: backfills missing dates from 2000-01-01 to yesterday
+- **Startup**: connects to DB with exponential backoff (5 retries), then backfills missing dates from 2000-01-01 to yesterday
 - **Scheduled**: fetches today's rates at 00:05, 04:00, 08:00, 12:00, 16:00, 20:00, 23:55 UTC
+- **Pool monitor**: `SELECT 1` every 30s, exports DB pool gauges to Prometheus
 
 ## Documentation
 
-Full docs: `make dev-docs` then open `http://localhost:3000/docs`
+Full docs: `make dev-docs` then open `http://localhost:3333`
 
 ## Crontab (production)
 
