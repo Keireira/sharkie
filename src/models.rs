@@ -26,6 +26,10 @@ pub struct HistoryQuery {
     pub currencies: Option<String>,
     #[serde(default)]
     pub base: Option<String>,
+    #[serde(default)]
+    pub limit: Option<u32>,
+    #[serde(default)]
+    pub offset: Option<u32>,
 }
 
 // ── API Response DTOs ──────────────────────────────
@@ -39,6 +43,7 @@ pub struct DayRates {
 #[derive(Debug, Serialize)]
 pub struct HistoryResponse {
     pub base: String,
+    pub total: usize,
     pub data: Vec<DayRates>,
 }
 

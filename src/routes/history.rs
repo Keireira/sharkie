@@ -46,8 +46,11 @@ pub async fn get_history(
         rebase_rates(&state, &mut data, &base, &currency_filter).await?;
     }
 
+    let limit = query.limit.unwrap_or(366).min(366).max(1) as usize;
+    let offset = query.offset.unwrap_or(0) as usize;
+
     let includes_today = includes_today_date(&date_filter);
-    let response = build_response(base, data);
+    let response = build_response(base, data, limit, offset);
     validate_response_size(&response)?;
 
     let total_ms = start.elapsed().as_millis();
@@ -317,16 +320,25 @@ async fn rebase_rates(
     Ok(())
 }
 
-fn build_response(base: String, data: HashMap<NaiveDate, HashMap<String, f64>>) -> HistoryResponse {
+fn build_response(
+    base: String,
+    data: HashMap<NaiveDate, HashMap<String, f64>>,
+    limit: usize,
+    offset: usize,
+) -> HistoryResponse {
     let mut day_rates: Vec<DayRates> = data
         .into_iter()
         .map(|(date, rates)| DayRates { date, rates })
         .collect();
     day_rates.sort_by_key(|d| d.date);
 
+    let total = day_rates.len();
+    let page = day_rates.into_iter().skip(offset).take(limit).collect();
+
     HistoryResponse {
         base,
-        data: day_rates,
+        total,
+        data: page,
     }
 }
 
