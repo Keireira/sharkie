@@ -2,7 +2,7 @@
        build build-fe build-be build-docs \
        up down logs ps \
        lint format check \
-       migrate restore restore-force backup clean help
+       migrate restore restore-force backup clean openapi help
 
 # ─── Development ────────────────────────────────────
 
@@ -25,8 +25,12 @@ dev-db: ## Start PostgreSQL in Docker and wait until ready
 	@until docker compose exec -T db pg_isready -U sharkie -d sharkie > /dev/null 2>&1; do sleep 1; done
 	@echo "Database is ready."
 
-dev-docs: ## Start docs dev server (port 3333)
+dev-docs: openapi ## Start docs dev server (port 3333)
 	cd docs && pnpm dev --port 3333
+
+openapi: ## Regenerate docs/public/openapi.json from Rust source
+	cargo run -- --openapi > docs/public/openapi.json
+	@echo "OpenAPI spec written to docs/public/openapi.json"
 
 # ─── Build ──────────────────────────────────────────
 

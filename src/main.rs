@@ -28,6 +28,13 @@ static REQUEST_ID_HEADER: HeaderName = HeaderName::from_static("x-request-id");
 
 #[tokio::main]
 async fn main() {
+    // Dump OpenAPI spec and exit (used by `make openapi` to generate docs/public/openapi.json)
+    if std::env::args().any(|a| a == "--openapi") {
+        let spec = serde_json::to_string_pretty(&routes::openapi_spec()).unwrap();
+        println!("{spec}");
+        return;
+    }
+
     // Local overrides first (gitignored), then production defaults.
     // dotenvy won't overwrite — first loaded value wins.
     dotenvy::from_filename("sharkie.local.env").ok();

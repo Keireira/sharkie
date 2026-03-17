@@ -27,6 +27,12 @@
     "styled-components": "^6.1.13",
     "webpack": "^5.97.0"
   },
+  "pnpm": {
+    "overrides": {
+      "d3-color": ">=3.1.0",
+      "serialize-javascript": ">=7.0.3"
+    }
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.6",
     "@types/node": "^25.5.0",

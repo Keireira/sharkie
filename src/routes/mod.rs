@@ -31,6 +31,11 @@ use crate::state::AppState;
 )]
 struct ApiDoc;
 
+/// Return the generated OpenAPI spec.
+pub fn openapi_spec() -> utoipa::openapi::OpenApi {
+    ApiDoc::openapi()
+}
+
 /// Build the application router with all routes.
 pub fn router() -> Router<AppState> {
     Router::new()

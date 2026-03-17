@@ -12,6 +12,12 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       title: 'My App',
     },
+    links: [
+      {
+        text: 'OpenAPI Reference',
+        url: '/api-reference',
+      },
+    ],
     githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`,
   };
 }
