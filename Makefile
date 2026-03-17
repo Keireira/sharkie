@@ -88,7 +88,7 @@ restore-force: ## Restore latest dump, replacing existing data
 	@./scripts/restore-latest-dump.sh --force
 
 backup: ## Download database backups from remote
-	./download-backups.sh
+	@./scripts/download-backups.sh
 
 # ─── Cleanup ────────────────────────────────────────
 

@@ -7,9 +7,36 @@ const ApiReference = () => (
 	<ApiReferenceReact
 		configuration={{
 			url: '/openapi.json',
-			theme: 'kepler',
 			hideDownloadButton: false,
-			serverSelection: 'dropdown'
+			serverSelection: 'dropdown',
+			defaultOpenAllTags: true,
+			showOperationId: true,
+			layout: 'modern',
+			theme: 'laserwave',
+			hideClientButton: false,
+			showSidebar: true,
+			showDeveloperTools: 'localhost',
+			showToolbar: 'localhost',
+			operationTitleSource: 'summary',
+			persistAuth: false,
+			telemetry: true,
+			isEditable: false,
+			isLoading: false,
+			hideModels: false,
+			documentDownloadType: 'both',
+			hideTestRequestButton: false,
+			hideSearch: false,
+			hideDarkModeToggle: false,
+			withDefaultFonts: true,
+			defaultOpenFirstTag: true,
+			expandAllModelSections: false,
+			expandAllResponses: false,
+			orderSchemaPropertiesBy: 'alpha',
+			orderRequiredPropertiesFirst: true,
+			_integration: 'react',
+			default: false,
+			slug: 'sharkie-api',
+			title: 'Sharkie API'
 		}}
 	/>
 );
