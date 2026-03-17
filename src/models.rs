@@ -33,7 +33,7 @@ pub struct HistoryQuery {
     /// Base currency for rate conversion. Defaults to USD.
     #[serde(default)]
     pub base: Option<String>,
-    /// Max number of days to return (1–366). Defaults to 366.
+    /// Max number of days to return (1-366). Defaults to 366.
     #[serde(default)]
     pub limit: Option<u32>,
     /// Number of days to skip for pagination. Defaults to 0.

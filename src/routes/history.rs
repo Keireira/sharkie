@@ -75,10 +75,10 @@ pub async fn get_history(
     );
 
     let cache_control = if includes_today {
-        // Today's data updates every 4h — short CDN TTL, shorter browser TTL
+        // Today's data updates every 4h -- short CDN TTL, shorter browser TTL
         "public, s-maxage=900, max-age=300"
     } else {
-        // Historical data is immutable — aggressive caching
+        // Historical data is immutable -- aggressive caching
         "public, s-maxage=86400, max-age=86400, immutable"
     };
 

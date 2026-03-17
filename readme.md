@@ -8,6 +8,9 @@
 
 Real-time currency exchange rates dashboard + API.
 
+> [!NOTE]  
+> Be aware that [documentation](./docs) and [frontend](./frontend) parts, though somewhat verified by me on security side, was written by an AI agents. So do not expect these parts to be any good, and do not expect the frontend to behave in a way you want (this is just an additional gimmick for internal usage, while the real purpose of this API is to serve rates for my [subscription tracker for iOS](https://github.com/Keireira/uha))
+
 ## Documentation
 
 For instructions make `make dev-docs` locally and open `http://localhost:3333` after

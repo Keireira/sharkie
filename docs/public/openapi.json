@@ -6,7 +6,7 @@
     "license": {
       "name": ""
     },
-    "version": "0.1.0"
+    "version": "1.0.0"
   },
   "servers": [
     {
@@ -134,7 +134,7 @@
           {
             "name": "limit",
             "in": "query",
-            "description": "Max number of days to return (1–366). Defaults to 366.",
+            "description": "Max number of days to return (1-366). Defaults to 366.",
             "required": false,
             "schema": {
               "type": "integer",

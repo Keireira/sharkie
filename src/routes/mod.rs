@@ -14,7 +14,7 @@ use crate::state::AppState;
     info(
         title = "Sharkie",
         description = "Exchange rates API with historical data back to 2000",
-        version = "0.1.0",
+        version = "1.0.0",
     ),
     servers(
         (url = "https://sharkie.uha.app", description = "Production"),

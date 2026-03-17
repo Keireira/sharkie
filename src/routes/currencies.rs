@@ -26,7 +26,7 @@ pub async fn get_currencies(State(state): State<AppState>) -> Result<Response, A
     let currencies: Vec<String> = rows.into_iter().map(|(code,)| code).collect();
 
     let mut response = Json(json!({ "currencies": currencies })).into_response();
-    // CDN 1h, browser 5min — currency list changes rarely
+    // CDN 1h, browser 5min -- currency list changes rarely
     response.headers_mut().insert(
         header::CACHE_CONTROL,
         "public, s-maxage=3600, max-age=300".parse().unwrap(),

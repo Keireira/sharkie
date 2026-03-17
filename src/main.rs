@@ -36,7 +36,7 @@ async fn main() {
     }
 
     // Local overrides first (gitignored), then production defaults.
-    // dotenvy won't overwrite — first loaded value wins.
+    // dotenvy won't overwrite -- first loaded value wins.
     dotenvy::from_filename("sharkie.local.env").ok();
     dotenvy::from_filename("sharkie.env").ok();
 
@@ -170,14 +170,14 @@ async fn main() {
         ))
         // Rate limiting (60 req/min per IP)
         .layer(governor_limiter)
-        // Request body limit (1 MB — all endpoints are GET, but protect against abuse)
+        // Request body limit (1 MB -- all endpoints are GET, but protect against abuse)
         .layer(RequestBodyLimitLayer::new(1024 * 1024))
         // Per-request timeout (30 seconds)
         .layer(TimeoutLayer::with_status_code(
             axum::http::StatusCode::REQUEST_TIMEOUT,
             Duration::from_secs(30),
         ))
-        // Prometheus HTTP metrics (outermost — captures everything incl. rate-limited/timed-out)
+        // Prometheus HTTP metrics (outermost -- captures everything incl. rate-limited/timed-out)
         .layer(axum::middleware::from_fn(telemetry::track_http))
         .with_state(state.clone());
 
@@ -201,7 +201,7 @@ async fn main() {
 }
 
 /// Attempt to connect to the database with exponential backoff.
-/// Retries `max_retries` times (1 s, 2 s, 4 s, …) before panicking.
+/// Retries `max_retries` times (1 s, 2 s, 4 s, ...) before panicking.
 async fn connect_with_retry(url: &str, max_retries: u32) -> PgPool {
     let mut delay = Duration::from_secs(1);
 

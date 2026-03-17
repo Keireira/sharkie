@@ -42,10 +42,6 @@ description: Planned improvements and known issues
 - Currently backfill stops on first API error. Should skip failed dates and retry later.
 - Add backfill progress tracking so it can resume after restart
 
-### SQLX Offline Mode
-
-- Run `cargo sqlx prepare` and commit `.sqlx/` directory for CI builds without a running database
-
 ---
 
 ## Priority 2 — API Improvements
@@ -71,16 +67,9 @@ Add CSP headers with nonce-based script policy.
 - Add build caching for faster CI runs
 - Add E2E smoke tests post-deploy (hit `/health` endpoint)
 
-### Backup Automation
-
-- Automate dump downloads in CI/scheduled workflow
-- Add dump validation (check row count, date range coverage)
-- Add dump rotation policy
-
 ### Database
 
-- Add read replica support for heavy query patterns
-- Consider TimescaleDB for time-series optimizations on `exchange_rates` table
+- Use TimescaleDB for time-series optimizations on `exchange_rates` table
 - Add `EXPLAIN ANALYZE` for slow query detection
 
 ---
@@ -91,20 +80,8 @@ Add CSP headers with nonce-based script policy.
 
 - **Backend**: Add integration tests with `sqlx::test` for route handlers
 - **Backend**: Add unit tests for date parsing, rate rebasing logic
-- **Frontend**: Add Vitest + React Testing Library for component tests
-- **E2E**: Add Playwright tests for critical user flows
 
 ### Local Dev
 
 - Add `docker-compose.test.yml` for running tests with a fresh database
 - Add seed data script for development (smaller than full dump)
-
----
-
-## Known Issues
-
-| Issue                         | Severity | Notes                                        |
-| ----------------------------- | -------- | -------------------------------------------- |
-| Backfill stops on first error | Medium   | Should skip and retry                        |
-| No API versioning             | Low      | Will matter when breaking changes are needed |
-| No CSP headers                | Low      | Should add for defense-in-depth              |
