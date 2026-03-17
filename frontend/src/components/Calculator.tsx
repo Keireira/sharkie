@@ -605,13 +605,21 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 	};
 
 	const fmt = (val: number): string => {
-		if (val >= 1000) return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+		if (val >= 1000)
+			return val.toLocaleString('en-US', {
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2
+			});
 		if (val >= 1) return val.toFixed(3);
 		return val.toFixed(4);
 	};
 
 	const fmtShort = (val: number): string => {
-		if (val >= 1000) return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+		if (val >= 1000)
+			return val.toLocaleString('en-US', {
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2
+			});
 		if (val >= 1) return val.toFixed(2);
 		return val.toFixed(3);
 	};
@@ -629,11 +637,21 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 
 	const groupByCat = useCallback(
 		(list: string[]) => {
-			const groups: { cat: CurrencyCategory; label: string; icon: string; items: string[] }[] = [];
+			const groups: {
+				cat: CurrencyCategory;
+				label: string;
+				icon: string;
+				items: string[];
+			}[] = [];
 			for (const cat of ALL_CATEGORIES) {
 				const items = list.filter((c) => getCurrencyCategory(c) === cat);
 				if (items.length > 0) {
-					groups.push({ cat, label: catLabels[cat], icon: CATEGORY_ICONS[cat], items });
+					groups.push({
+						cat,
+						label: catLabels[cat],
+						icon: CATEGORY_ICONS[cat],
+						items
+					});
 				}
 			}
 			return groups;
@@ -736,7 +754,12 @@ const Calculator = ({ data, baseCurrency, currencies, open, onClose, catPos }: C
 						transition={{ type: 'spring', damping: 25, stiffness: 350 }}
 						style={
 							posPercent
-								? { left: `${posPercent.x}vw`, top: `${posPercent.y}vh`, right: 'auto', bottom: 'auto' }
+								? {
+										left: `${posPercent.x}vw`,
+										top: `${posPercent.y}vh`,
+										right: 'auto',
+										bottom: 'auto'
+									}
 								: { bottom: 92, right: 24 }
 						}
 					>

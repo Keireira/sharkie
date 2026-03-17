@@ -133,8 +133,9 @@ export const useHealthQuery = () => {
 	return useQuery({
 		queryKey: ['health'],
 		queryFn: fetchHealth,
-		staleTime: 60 * 1000,
-		refetchInterval: 60 * 1000,
+		staleTime: 5 * 60 * 1000,
+		gcTime: 10 * 60 * 1000,
+		refetchOnWindowFocus: true,
 		retry: 1
 	});
 };

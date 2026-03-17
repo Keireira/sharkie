@@ -1,0 +1,6 @@
+[advisories]
+ignore = [
+    # rsa via sqlx-mysql (compile-time only, sqlx-macros-core pulls all backends).
+    # No upstream fix available. Not in runtime binary.
+    "RUSTSEC-2023-0071",
+]

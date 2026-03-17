@@ -1,14 +1,4 @@
 {
   "title": "Sharkie",
-  "pages": [
-    "index",
-    "architecture",
-    "api",
-    "frontend",
-    "backend",
-    "development",
-    "deployment",
-    "security",
-    "roadmap"
-  ]
+  "pages": ["index", "architecture", "api", "frontend", "backend", "development", "deployment", "security", "roadmap"]
 }

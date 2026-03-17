@@ -16,11 +16,11 @@ use crate::state::AppState;
         description = "Exchange rates API with historical data back to 2000",
         version = "0.1.0",
     ),
-    paths(
-        health::health_check,
-        currencies::get_currencies,
-        history::get_history,
+    servers(
+        (url = "https://sharkie.uha.app", description = "Production"),
+        (url = "http://localhost:3000", description = "Local development"),
     ),
+    paths(health::health_check, currencies::get_currencies, history::get_history,),
     components(schemas(
         HealthResponse,
         CurrenciesResponse,
@@ -42,9 +42,6 @@ pub fn router() -> Router<AppState> {
         .route("/health", get(health::health_check))
         .route("/currencies", get(currencies::get_currencies))
         .route("/history", get(history::get_history))
-        .route(
-            "/openapi.json",
-            get(|| async { Json(ApiDoc::openapi()) }),
-        )
+        .route("/openapi.json", get(|| async { Json(ApiDoc::openapi()) }))
         .layer(CompressionLayer::new().gzip(true).br(true))
 }

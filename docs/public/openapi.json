@@ -8,6 +8,16 @@
     },
     "version": "0.1.0"
   },
+  "servers": [
+    {
+      "url": "https://sharkie.uha.app",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
   "paths": {
     "/currencies": {
       "get": {

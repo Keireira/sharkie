@@ -6,7 +6,6 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { ThemeProvider } from 'styled-components';
 import { type Settings, useSettings } from '@/hooks/useSettings';
-import { fetchHealth } from '@/lib/api';
 import i18n from '@/lib/i18n';
 import { darkTheme, lightTheme } from '@/lib/theme';
 
@@ -43,19 +42,17 @@ export const SettingsContext = createContext<SettingsContextType>({
 export const useAppSettings = () => useContext(SettingsContext);
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
-	const [queryClient] = useState(() => {
-		const client = new QueryClient({
-			defaultOptions: {
-				queries: {
-					staleTime: 5 * 60 * 1000,
-					gcTime: 30 * 60 * 1000
+	const [queryClient] = useState(
+		() =>
+			new QueryClient({
+				defaultOptions: {
+					queries: {
+						staleTime: 5 * 60 * 1000,
+						gcTime: 30 * 60 * 1000
+					}
 				}
-			}
-		});
-		// Prefetch health check before any other queries
-		client.prefetchQuery({ queryKey: ['health'], queryFn: fetchHealth });
-		return client;
-	});
+			})
+	);
 
 	const { settings, setSettings, isLoaded } = useSettings();
 	const [searchQuery, setSearchQuery] = useState('');

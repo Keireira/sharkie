@@ -34,9 +34,9 @@ jobs:
         run: cargo clippy -- -D warnings
 
       - name: Audit dependencies
-        run: |
-          cargo install --locked cargo-audit
-          cargo audit
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check advisories
 
   frontend:
     name: Frontend checks

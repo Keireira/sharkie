@@ -727,11 +727,21 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 				es: CATEGORY_LABELS_ES
 			};
 			const labels = labelMap[i18n.language] || CATEGORY_LABELS_EN;
-			const groups: { cat: CurrencyCategory; label: string; icon: string; items: string[] }[] = [];
+			const groups: {
+				cat: CurrencyCategory;
+				label: string;
+				icon: string;
+				items: string[];
+			}[] = [];
 			for (const cat of ALL_CATEGORIES) {
 				const items = list.filter((c) => getCurrencyCategory(c) === cat);
 				if (items.length > 0) {
-					groups.push({ cat, label: labels[cat], icon: CATEGORY_ICONS[cat], items });
+					groups.push({
+						cat,
+						label: labels[cat],
+						icon: CATEGORY_ICONS[cat],
+						items
+					});
 				}
 			}
 			return groups;
@@ -752,12 +762,16 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 
 	const removeCurrency = (code: string) => {
 		if (settings.selectedCurrencies.length <= 1) return;
-		setSettings({ selectedCurrencies: settings.selectedCurrencies.filter((c) => c !== code) });
+		setSettings({
+			selectedCurrencies: settings.selectedCurrencies.filter((c) => c !== code)
+		});
 	};
 
 	const addCurrency = (code: string) => {
 		if (!settings.selectedCurrencies.includes(code) && settings.selectedCurrencies.length < 6) {
-			setSettings({ selectedCurrencies: [...settings.selectedCurrencies, code] });
+			setSettings({
+				selectedCurrencies: [...settings.selectedCurrencies, code]
+			});
 		}
 		setAddOpen(false);
 		setAddSearch('');
@@ -802,10 +816,16 @@ const SidebarContent = ({ activeId, onNavClick }: { activeId: string; onNavClick
 		setSettings({ period: p, customFrom: '', customTo: '' });
 	};
 	const handleDateFromChange = (value: string) => {
-		setSettings({ customFrom: value, customTo: settings.customTo || effectiveDates.to });
+		setSettings({
+			customFrom: value,
+			customTo: settings.customTo || effectiveDates.to
+		});
 	};
 	const handleDateToChange = (value: string) => {
-		setSettings({ customTo: value, customFrom: settings.customFrom || effectiveDates.from });
+		setSettings({
+			customTo: value,
+			customFrom: settings.customFrom || effectiveDates.from
+		});
 	};
 
 	// Theme & lang
