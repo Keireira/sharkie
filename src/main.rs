@@ -95,9 +95,7 @@ async fn main() {
             .finish()
             .expect("failed to build governor config"),
     );
-    let governor_limiter = tower_governor::GovernorLayer {
-        config: governor_conf,
-    };
+    let governor_limiter = tower_governor::GovernorLayer::new(governor_conf);
 
     // ── Security headers ───────────────────────────
     let hsts = SetResponseHeaderLayer::overriding(
@@ -129,19 +127,21 @@ async fn main() {
         .layer(referrer)
         // Request ID: generate → trace → propagate to response
         .layer(PropagateRequestIdLayer::new(REQUEST_ID_HEADER.clone()))
-        .layer(TraceLayer::new_for_http().make_span_with(|request: &axum::http::Request<_>| {
-            let request_id = request
-                .headers()
-                .get(&REQUEST_ID_HEADER)
-                .and_then(|v| v.to_str().ok())
-                .unwrap_or("-");
-            tracing::info_span!(
-                "http",
-                method = %request.method(),
-                uri = %request.uri(),
-                request_id = %request_id,
-            )
-        }))
+        .layer(
+            TraceLayer::new_for_http().make_span_with(|request: &axum::http::Request<_>| {
+                let request_id = request
+                    .headers()
+                    .get(&REQUEST_ID_HEADER)
+                    .and_then(|v| v.to_str().ok())
+                    .unwrap_or("-");
+                tracing::info_span!(
+                    "http",
+                    method = %request.method(),
+                    uri = %request.uri(),
+                    request_id = %request_id,
+                )
+            }),
+        )
         .layer(SetRequestIdLayer::new(
             REQUEST_ID_HEADER.clone(),
             MakeRequestUuid,
@@ -151,7 +151,10 @@ async fn main() {
         // Request body limit (1 MB — all endpoints are GET, but protect against abuse)
         .layer(RequestBodyLimitLayer::new(1024 * 1024))
         // Per-request timeout (30 seconds)
-        .layer(TimeoutLayer::with_status_code(axum::http::StatusCode::REQUEST_TIMEOUT, Duration::from_secs(30)))
+        .layer(TimeoutLayer::with_status_code(
+            axum::http::StatusCode::REQUEST_TIMEOUT,
+            Duration::from_secs(30),
+        ))
         .with_state(state.clone());
 
     // Spawn background task for daily rate updates

@@ -68,10 +68,9 @@ pub async fn get_history(
     };
 
     let mut http_response = Json(response).into_response();
-    http_response.headers_mut().insert(
-        header::CACHE_CONTROL,
-        cache_control.parse().unwrap(),
-    );
+    http_response
+        .headers_mut()
+        .insert(header::CACHE_CONTROL, cache_control.parse().unwrap());
     Ok(http_response)
 }
 

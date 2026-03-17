@@ -9,9 +9,7 @@ use serde_json::json;
 use crate::error::ApiError;
 use crate::state::AppState;
 
-pub async fn get_currencies(
-    State(state): State<AppState>,
-) -> Result<Response, ApiError> {
+pub async fn get_currencies(State(state): State<AppState>) -> Result<Response, ApiError> {
     let rows: Vec<(String,)> =
         sqlx::query_as("SELECT DISTINCT currency_code FROM exchange_rates ORDER BY currency_code")
             .fetch_all(&state.db)

@@ -7,55 +7,99 @@ description: Security measures and guidelines
 
 # Security
 
-Security guidelines are documented in `rules/frontend-security.md` and `rules/hack.md`. This page summarizes the key measures in place.
+This page summarizes the security measures in place.
 
 ## Backend Security
 
+### Security Headers
+
+Every response includes hardened headers via `tower-http::set_header`:
+
+| Header | Value | Purpose |
+|--------|-------|---------|
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` | Force HTTPS for 2 years |
+| `X-Content-Type-Options` | `nosniff` | Prevent MIME sniffing |
+| `X-Frame-Options` | `DENY` | Block iframe embedding |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Limit referrer leaking |
+
+### Rate Limiting
+
+60 requests per minute per client IP via `tower_governor`:
+- Uses `SmartIpKeyExtractor`: reads `X-Forwarded-For` / `X-Real-IP` from Cloudflare/Nginx, falls back to peer IP
+- Returns `429 Too Many Requests` with `retry-after` header
+- Response includes `x-ratelimit-limit` and `x-ratelimit-remaining`
+
+### Request Timeouts
+
+30-second per-request timeout via `tower-http::timeout`. Returns `408 Request Timeout` if exceeded. Prevents slow queries from blocking workers.
+
+### Body Size Limits
+
+1 MB request body limit via `tower-http::limit::RequestBodyLimitLayer`. All endpoints are GET-only, but this protects against abuse.
+
 ### SQL Injection Prevention
+
 All database queries use parameterized placeholders (`$1`, `$2`, ...) via SQLx. No string interpolation is used for user-provided values in SQL.
 
 ### Input Validation
+
 - Date parameters are parsed with strict `YYYY-MM-DD` format
+- Future dates are clamped to today (UTC) to prevent timezone-related errors
+- Date ranges are capped at 5 years maximum
 - Currency codes are uppercased and filtered
 - Empty inputs return 400 errors with descriptive messages
 
 ### Error Responses
-Internal errors are logged server-side but return generic messages to clients. Stack traces and internal details are never exposed.
+
+Internal errors are logged server-side (with request ID for correlation) but return generic messages to clients. Stack traces and internal details are never exposed.
 
 ### CORS
-Configurable via `ALLOWED_ORIGINS` environment variable. Defaults to permissive (`Any`) for development; should be restricted in production.
+
+Configurable via `ALLOWED_ORIGINS` environment variable. Defaults to permissive (`Any`) for development; must be restricted to specific domains in production.
 
 ### Graceful Shutdown
-The server handles SIGTERM and Ctrl+C signals, allowing in-flight requests to complete.
+
+The server handles SIGTERM and Ctrl+C signals, allowing in-flight requests to complete before exiting.
 
 ### Response Size Limits
+
 API responses are capped at 512 KB to prevent memory abuse from overly broad queries.
+
+## Request Tracing
+
+Every request receives a UUID `x-request-id` header. This ID appears in:
+- The response header (for client-side debugging)
+- All server log lines within the request (for server-side correlation)
 
 ## Frontend Security
 
 ### No Server Runtime
+
 The frontend is statically exported — there is no Node.js server in production, eliminating an entire class of server-side vulnerabilities.
 
 ### API Proxying
-All API calls go through Nginx's `/api/proxy/` reverse proxy, hiding the backend's direct address from clients.
+
+All API calls go through Nginx's `/api/proxy/` reverse proxy (behind Cloudflare), hiding the backend's direct address from clients.
 
 ### Content Security
+
 - JSON-LD for structured data uses `dangerouslySetInnerHTML` only for static, developer-controlled data (not user input)
-- External links should use `rel="noopener noreferrer"`
 - No user-generated HTML is rendered
 
 ### Environment Variables
+
 - `NEXT_PUBLIC_*` variables are the only ones bundled into the client
 - Sensitive keys (`DATABASE_URL`, `CURRENCY_API_KEY`) are server-side only
 
-## Recommendations
+## CI Security
 
-Per the project's security rules, these should be implemented for a production deployment:
+- **`cargo audit`** — scans for known vulnerabilities in Rust dependencies
+- **`pnpm audit --audit-level=high`** — scans for known vulnerabilities in npm dependencies
+- **Dependabot** — configured for security-only updates (no minor/patch bumps)
+- **Frozen lockfiles** — `pnpm install --frozen-lockfile` in CI
 
-- [ ] Rate limiting at the reverse proxy level (nginx `limit_req`)
-- [ ] Security headers (HSTS, X-Content-Type-Options, X-Frame-Options)
-- [ ] Restrict CORS origins to specific domains
-- [ ] Enable `cargo audit` in CI
-- [ ] Run `pnpm audit` in CI
+## Remaining Recommendations
+
+- [ ] Set `ALLOWED_ORIGINS` to specific domains in production
 - [ ] Add Content-Security-Policy headers
-- [ ] Set up monitoring for 4xx/5xx spikes
+- [ ] Set up monitoring for 4xx/5xx spikes and rate limit hits

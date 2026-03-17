@@ -7,7 +7,7 @@ description: REST API endpoints and parameters
 
 # API Reference
 
-The Sharkie API provides exchange rate data through three endpoints. All responses are JSON.
+The Sharkie API provides exchange rate data through three endpoints. All responses are JSON with gzip/brotli compression.
 
 ## Base URL
 
@@ -16,11 +16,28 @@ Production: https://sharkie.uha.app
 Local:      http://localhost:3000
 ```
 
+## Common Response Headers
+
+Every response includes:
+
+| Header | Value |
+|--------|-------|
+| `x-request-id` | UUID v4 (for debugging/correlation) |
+| `x-ratelimit-limit` | `60` |
+| `x-ratelimit-remaining` | Remaining requests in window |
+| `strict-transport-security` | HSTS with preload |
+| `x-content-type-options` | `nosniff` |
+| `x-frame-options` | `DENY` |
+| `referrer-policy` | `strict-origin-when-cross-origin` |
+| `content-encoding` | `gzip` or `br` (if client supports) |
+
 ---
 
 ## GET /health
 
 Returns server and database status. Returns `200 OK` when healthy, `503 Service Unavailable` when the database is unreachable.
+
+**Cache:** `no-store`
 
 **Response (healthy):**
 ```json
@@ -46,6 +63,8 @@ Returns server and database status. Returns `200 OK` when healthy, `503 Service 
 
 Returns all available currency codes.
 
+**Cache:** `public, s-maxage=3600, max-age=300`
+
 **Response:**
 ```json
 {
@@ -69,7 +88,18 @@ Returns historical exchange rates. Supports date ranges, specific dates, currenc
 | `currencies` | string | optional | Comma-separated currency codes to filter. |
 | `base` | string | optional | Base currency (default: `USD`). |
 
-Either `from`+`to` or `date` must be provided.
+Either `from`+`to` or `date` must be provided. Date range maximum is 5 years.
+
+### Timezone Handling
+
+Dates in the future (relative to UTC) are automatically clamped to today. This prevents 404 errors when clients in timezones ahead of UTC (e.g., GMT+10) request "today's" rates that haven't been stored yet on the server.
+
+### Cache Policy
+
+| Condition | Cache-Control |
+|-----------|--------------|
+| All dates in the past | `public, s-maxage=86400, max-age=86400, immutable` |
+| Includes today or future | `public, s-maxage=900, max-age=300` |
 
 ### Examples
 
@@ -100,13 +130,6 @@ GET /history?from=2024-01-01&to=2024-01-07&base=EUR&currencies=USD,GBP,JPY
         "EUR": 0.9013,
         "GBP": 0.7854
       }
-    },
-    {
-      "date": "2024-01-02",
-      "rates": {
-        "EUR": 0.9021,
-        "GBP": 0.7862
-      }
     }
   ]
 }
@@ -118,7 +141,9 @@ GET /history?from=2024-01-01&to=2024-01-07&base=EUR&currencies=USD,GBP,JPY
 |--------|-----------|
 | 400 | Invalid date format, missing parameters, empty currency list, date range exceeds 5 years |
 | 404 | No data found for the given query |
+| 408 | Request timed out (30s limit) |
 | 413 | Response exceeds 512 KB limit |
+| 429 | Rate limit exceeded (60 req/min) |
 | 500 | Internal server error |
 
 ```json
@@ -133,7 +158,13 @@ GET /history?from=2024-01-01&to=2024-01-07&base=EUR&currencies=USD,GBP,JPY
 
 ## Rate Limits
 
-Currently no rate limiting is enforced at the API level. Rate limiting should be implemented at the reverse proxy layer for production use.
+60 requests per minute per client IP. Tracked via `X-Forwarded-For` (Cloudflare/Nginx) with peer IP fallback. Response headers:
+
+```
+x-ratelimit-limit: 60
+x-ratelimit-remaining: 42
+retry-after: 1          # (only on 429)
+```
 
 ## Response Size
 

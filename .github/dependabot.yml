@@ -8,6 +8,15 @@ updates:
     labels:
       - dependencies
       - security
+    # Only security fixes, not version bumps
+    groups:
+      security:
+        applies-to: security-updates
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
 
   - package-ecosystem: npm
     directory: /frontend
@@ -17,6 +26,14 @@ updates:
     labels:
       - dependencies
       - security
+    groups:
+      security:
+        applies-to: security-updates
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
 
   - package-ecosystem: npm
     directory: /docs
@@ -25,6 +42,15 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - dependencies
+      - security
+    groups:
+      security:
+        applies-to: security-updates
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
 
   - package-ecosystem: github-actions
     directory: /
@@ -34,3 +60,8 @@ updates:
     labels:
       - dependencies
       - ci
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"

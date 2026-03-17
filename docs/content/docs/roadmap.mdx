@@ -7,40 +7,29 @@ description: Planned improvements and known issues
 
 # Roadmap
 
-## Current State
+## Implemented
 
-Sharkie is a working MVP with a Rust API backend, PostgreSQL database, and a statically-exported Next.js frontend. The core functionality — historical exchange rate tracking, charts, comparison, calculator — is functional.
-
----
-
-## Priority 1 — Security Hardening
-
-### Rate Limiting
-
-Add `tower-governor` middleware to protect against abuse:
-
-- History queries: 60 req/min per IP
-
-### Security Headers
-
-Add middleware for:
-
-- `Strict-Transport-Security` (HSTS)
-- `X-Content-Type-Options: nosniff`
-- `X-Frame-Options: DENY`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-
-### Body Size Limits
-
-Add `tower-http::limit::RequestBodyLimitLayer` to prevent memory abuse from large request bodies.
-
-### Request Timeouts
-
-Add `tower::timeout::TimeoutLayer` for per-request deadlines (e.g., 30s).
+| Feature | Status |
+|---------|--------|
+| Rate limiting (60 req/min per IP) | Done |
+| Security headers (HSTS, nosniff, DENY, referrer-policy) | Done |
+| Request body size limit (1 MB) | Done |
+| Request timeout (30s → 408) | Done |
+| Response compression (gzip + brotli) | Done |
+| Cache headers (per-route, CDN-aware) | Done |
+| Request ID tracing (UUID, structured logs) | Done |
+| Query execution timing in logs | Done |
+| Timezone-aware date clamping | Done |
+| DB-aware health check (`SELECT 1`) | Done |
+| Date range validation (5 year max) | Done |
+| Graceful shutdown (SIGTERM + Ctrl+C) | Done |
+| CORS (configurable via env) | Done |
+| Dependabot (security-only updates) | Done |
+| CI pipeline (clippy + biome + audit) | Done |
 
 ---
 
-## Priority 2 — Reliability
+## Priority 1 — Reliability
 
 ### Database Connection Resilience
 
@@ -58,7 +47,7 @@ Add `tower::timeout::TimeoutLayer` for per-request deadlines (e.g., 30s).
 
 ---
 
-## Priority 3 — API Improvements
+## Priority 2 — API Improvements
 
 ### Pagination
 
@@ -76,22 +65,24 @@ Prepare for future breaking changes:
 GET /v1/history?...
 ```
 
+### Content-Security-Policy
+
+Add CSP headers with nonce-based script policy.
+
 ---
 
-## Priority 4 — Infrastructure
-
-### CI Pipeline Enhancement
-
-- Add `cargo audit` step (security dependency scanning) — **configured, needs `cargo-audit` installed**
-- Add `pnpm audit --audit-level=high` — **configured**
-- Add build caching for faster CI runs
-- Add E2E smoke tests post-deploy (hit `/health` endpoint)
+## Priority 3 — Infrastructure
 
 ### Monitoring
 
 - Add Prometheus metrics endpoint (`/metrics`) via `metrics` + `axum-prometheus`
 - Track: request count, latency histograms, error rates, DB pool stats, backfill progress
-- Alert on: 5xx spike, DB pool exhaustion, backfill failures
+- Alert on: 5xx spike, DB pool exhaustion, backfill failures, rate limit hits
+
+### CI Pipeline Enhancement
+
+- Add build caching for faster CI runs
+- Add E2E smoke tests post-deploy (hit `/health` endpoint)
 
 ### Backup Automation
 
@@ -107,7 +98,7 @@ GET /v1/history?...
 
 ---
 
-## Priority 5 — Developer Experience
+## Priority 4 — Developer Experience
 
 ### Testing
 
@@ -131,10 +122,8 @@ GET /v1/history?...
 
 ## Known Issues
 
-| Issue                         | Severity | Notes                                        |
-| ----------------------------- | -------- | -------------------------------------------- |
-| No rate limiting              | High     | Vulnerable to abuse in production            |
-| Backfill stops on first error | Medium   | Should skip and retry                        |
-| No request timeouts           | Medium   | Slow queries can block workers               |
-| No response compression       | Low      | Bandwidth could be reduced 80%               |
-| No API versioning             | Low      | Will matter when breaking changes are needed |
+| Issue | Severity | Notes |
+|-------|----------|-------|
+| Backfill stops on first error | Medium | Should skip and retry |
+| No API versioning | Low | Will matter when breaking changes are needed |
+| No CSP headers | Low | Should add for defense-in-depth |

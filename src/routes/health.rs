@@ -27,9 +27,8 @@ pub async fn health_check(State(state): State<AppState>) -> Response {
     }));
 
     let mut response = (status, body).into_response();
-    response.headers_mut().insert(
-        header::CACHE_CONTROL,
-        "no-store".parse().unwrap(),
-    );
+    response
+        .headers_mut()
+        .insert(header::CACHE_CONTROL, "no-store".parse().unwrap());
     response
 }

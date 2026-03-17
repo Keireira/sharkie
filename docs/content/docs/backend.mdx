@@ -13,16 +13,16 @@ The backend is a Rust API server built with Axum 0.8 and SQLx 0.8, running on To
 
 ```
 src/
-├── main.rs          # Entry point: bootstrap, middleware, graceful shutdown
+├── main.rs          # Entry point: bootstrap, middleware stack, graceful shutdown
 ├── config.rs        # Config struct loaded from environment variables
 ├── error.rs         # Unified ApiError enum with IntoResponse
 ├── state.rs         # AppState: DB pool, config, HTTP client
 ├── models.rs        # DB models (ExchangeRate) and API DTOs
 ├── routes/
-│   ├── mod.rs       # Router assembly
-│   ├── health.rs    # GET /health
+│   ├── mod.rs       # Router assembly + compression layer
+│   ├── health.rs    # GET /health (DB connectivity check)
 │   ├── currencies.rs # GET /currencies
-│   └── history.rs   # GET /history (date parsing, filtering, rebasing)
+│   └── history.rs   # GET /history (date parsing, TZ clamping, filtering, rebasing, timing)
 └── services/
     ├── mod.rs
     └── rates.rs     # Backfill, daily fetch, scheduler, batch insert
@@ -30,9 +30,9 @@ src/
 
 ## Architecture Pattern
 
-The codebase follows the **routes → services → db** pattern from the project rules:
+The codebase follows the **routes → services → db** pattern:
 
-1. **Routes** handle HTTP concerns (parsing query params, returning JSON)
+1. **Routes** handle HTTP concerns (parsing query params, returning JSON, cache headers)
 2. **Services** contain business logic (backfill, scheduling, rate calculations)
 3. **Database** access is done through SQLx with parameterized queries (SQL injection safe)
 
@@ -56,9 +56,67 @@ A unified `ApiError` enum covers all error cases:
 - `NotFound` → 404
 - `InvalidInput(String)` → 400
 - `PayloadTooLarge` → 413
-- `Internal(String)` → 500 (message logged, generic response to client)
+- `Internal(String)` → 500 (message logged server-side, generic response to client)
 
 Automatic `From` implementations for `sqlx::Error` and `reqwest::Error` allow using `?` in handlers.
+
+## Middleware Stack
+
+Middleware is applied in `main.rs` as a layered tower stack. Order (outermost first):
+
+| Layer | Crate | Purpose |
+|-------|-------|---------|
+| **Timeout** | `tower-http::timeout` | 30s per-request deadline → 408 |
+| **Body limit** | `tower-http::limit` | 1 MB request body cap |
+| **Rate limiting** | `tower_governor` | 60 req/min per IP (SmartIpKeyExtractor) |
+| **Request ID** | `tower-http::request_id` | UUID v4 in `x-request-id`, propagated to response |
+| **Tracing** | `tower-http::trace` | Structured logs with method, URI, request ID |
+| **Security headers** | `tower-http::set_header` | HSTS, nosniff, DENY, referrer-policy |
+| **CORS** | `tower-http::cors` | Configurable via `ALLOWED_ORIGINS` |
+| **Compression** | `tower-http::compression` | gzip + brotli (in router) |
+
+### Security Headers
+
+Every response includes:
+
+```
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: strict-origin-when-cross-origin
+```
+
+### Rate Limiting
+
+60 requests per minute per client IP via `tower_governor`. Uses `SmartIpKeyExtractor` which reads `X-Forwarded-For` / `X-Real-IP` headers (from Cloudflare/Nginx) and falls back to peer IP for direct connections. Returns `429 Too Many Requests` with `x-ratelimit-limit`, `x-ratelimit-remaining`, and `retry-after` headers.
+
+### Request Tracing
+
+Every request gets a UUID (`x-request-id`) that appears in:
+- Response header (for client-side correlation)
+- All log lines within the request span
+- Structured fields: `method`, `uri`, `request_id`
+
+The `/history` handler additionally logs `query_ms` (DB query time), `total_ms` (full handler time), `days` (result count), and `includes_today`.
+
+## Cache Headers
+
+Per-route `Cache-Control` for Cloudflare (CDN) + Nginx + browser caching:
+
+| Endpoint | Cache-Control | Rationale |
+|----------|--------------|-----------|
+| `/health` | `no-store` | Always fresh for monitoring |
+| `/currencies` | `public, s-maxage=3600, max-age=300` | Rarely changes (CDN 1h, browser 5m) |
+| `/history` (past only) | `public, s-maxage=86400, max-age=86400, immutable` | Historical data never changes |
+| `/history` (includes today) | `public, s-maxage=900, max-age=300` | Today's data refreshes every 4h (CDN 15m, browser 5m) |
+
+## Response Compression
+
+All responses are compressed with gzip or brotli via `tower-http::compression`, negotiated by the client's `Accept-Encoding` header. Exchange rate JSON compresses ~80%.
+
+## Timezone-Aware Date Handling
+
+Clients in timezones ahead of UTC (e.g., GMT+10) may request dates that are "today" for them but "tomorrow" for the server. To prevent 404 errors, the server clamps all future dates to today (UTC). This ensures the latest available data is always returned.
 
 ## Background Tasks
 
@@ -73,12 +131,6 @@ Background Tokio task that:
 
 ### Batch Insert
 Both backfill and daily fetch use a single parameterized `INSERT ... ON CONFLICT DO UPDATE` query for efficiency.
-
-## Middleware
-
-- **CORS** — via `tower-http::cors`, configurable via `ALLOWED_ORIGINS`
-- **Tracing** — structured logging via `tracing` + `tracing-subscriber` with env filter
-- **Graceful Shutdown** — handles SIGTERM and Ctrl+C cleanly
 
 ## Database
 
