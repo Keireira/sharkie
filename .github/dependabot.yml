@@ -8,6 +8,7 @@ updates:
     labels:
       - dependencies
       - security
+      - bot
     # Only security fixes, not version bumps
     groups:
       security:
@@ -28,6 +29,7 @@ updates:
     labels:
       - dependencies
       - security
+      - bot
     groups:
       security:
         applies-to: security-updates
@@ -47,6 +49,7 @@ updates:
     labels:
       - dependencies
       - security
+      - bot
     groups:
       security:
         applies-to: security-updates
@@ -66,6 +69,7 @@ updates:
     labels:
       - dependencies
       - ci
+      - bot
     ignore:
       - dependency-name: "*"
         update-types:
