@@ -19,6 +19,18 @@ enum DateFilter {
     List(Vec<NaiveDate>),
 }
 
+#[utoipa::path(
+    get,
+    path = "/history",
+    params(HistoryQuery),
+    responses(
+        (status = 200, description = "Historical exchange rates", body = crate::models::HistoryResponse),
+        (status = 400, description = "Invalid input", body = crate::models::ErrorResponse),
+        (status = 404, description = "No data found", body = crate::models::ErrorResponse),
+        (status = 413, description = "Response too large", body = crate::models::ErrorResponse),
+        (status = 500, description = "Internal error", body = crate::models::ErrorResponse),
+    )
+)]
 pub async fn get_history(
     State(state): State<AppState>,
     Query(query): Query<HistoryQuery>,

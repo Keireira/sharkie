@@ -8,6 +8,14 @@ use serde_json::json;
 
 use crate::state::AppState;
 
+#[utoipa::path(
+    get,
+    path = "/health",
+    responses(
+        (status = 200, description = "Service healthy", body = crate::models::HealthResponse),
+        (status = 503, description = "Service degraded", body = crate::models::HealthResponse),
+    )
+)]
 pub async fn health_check(State(state): State<AppState>) -> Response {
     let db_ok = sqlx::query_scalar::<_, i32>("SELECT 1")
         .fetch_one(&state.db)

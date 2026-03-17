@@ -9,6 +9,14 @@ use serde_json::json;
 use crate::error::ApiError;
 use crate::state::AppState;
 
+#[utoipa::path(
+    get,
+    path = "/currencies",
+    responses(
+        (status = 200, description = "Available currency codes", body = crate::models::CurrenciesResponse),
+        (status = 500, description = "Internal error", body = crate::models::ErrorResponse),
+    )
+)]
 pub async fn get_currencies(State(state): State<AppState>) -> Result<Response, ApiError> {
     let rows: Vec<(String,)> =
         sqlx::query_as("SELECT DISTINCT currency_code FROM exchange_rates ORDER BY currency_code")

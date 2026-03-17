@@ -9,23 +9,23 @@ description: Planned improvements and known issues
 
 ## Implemented
 
-| Feature | Status |
-|---------|--------|
-| Rate limiting (60 req/min per IP) | Done |
-| Security headers (HSTS, nosniff, DENY, referrer-policy) | Done |
-| Request body size limit (1 MB) | Done |
-| Request timeout (30s → 408) | Done |
-| Response compression (gzip + brotli) | Done |
-| Cache headers (per-route, CDN-aware) | Done |
-| Request ID tracing (UUID, structured logs) | Done |
-| Query execution timing in logs | Done |
-| Timezone-aware date clamping | Done |
-| DB-aware health check (`SELECT 1`) | Done |
-| Date range validation (5 year max) | Done |
-| Graceful shutdown (SIGTERM + Ctrl+C) | Done |
-| CORS (configurable via env) | Done |
-| Dependabot (security-only updates) | Done |
-| CI pipeline (clippy + biome + audit) | Done |
+| Feature                                                 | Status |
+| ------------------------------------------------------- | ------ |
+| Rate limiting (60 req/min per IP)                       | Done   |
+| Security headers (HSTS, nosniff, DENY, referrer-policy) | Done   |
+| Request body size limit (1 MB)                          | Done   |
+| Request timeout (30s → 408)                             | Done   |
+| Response compression (gzip + brotli)                    | Done   |
+| Cache headers (per-route, CDN-aware)                    | Done   |
+| Request ID tracing (UUID, structured logs)              | Done   |
+| Query execution timing in logs                          | Done   |
+| Timezone-aware date clamping                            | Done   |
+| DB-aware health check (`SELECT 1`)                      | Done   |
+| Date range validation (5 year max)                      | Done   |
+| Graceful shutdown (SIGTERM + Ctrl+C)                    | Done   |
+| CORS (configurable via env)                             | Done   |
+| Dependabot (security-only updates)                      | Done   |
+| CI pipeline (clippy + biome + audit)                    | Done   |
 
 ---
 
@@ -110,8 +110,6 @@ Add CSP headers with nonce-based script policy.
 ### Documentation
 
 - Add OpenAPI/Swagger spec for the API (via `utoipa` crate)
-- Add ADR (Architecture Decision Records) for key decisions
-- Add CONTRIBUTING.md
 
 ### Local Dev
 
@@ -122,8 +120,8 @@ Add CSP headers with nonce-based script policy.
 
 ## Known Issues
 
-| Issue | Severity | Notes |
-|-------|----------|-------|
-| Backfill stops on first error | Medium | Should skip and retry |
-| No API versioning | Low | Will matter when breaking changes are needed |
-| No CSP headers | Low | Should add for defense-in-depth |
+| Issue                         | Severity | Notes                                        |
+| ----------------------------- | -------- | -------------------------------------------- |
+| Backfill stops on first error | Medium   | Should skip and retry                        |
+| No API versioning             | Low      | Will matter when breaking changes are needed |
+| No CSP headers                | Low      | Should add for defense-in-depth              |
