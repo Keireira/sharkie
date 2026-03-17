@@ -45,7 +45,7 @@ jobs:
           target: "/opt/sharkie"
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.HOSTNAME }}
           username: ${{ secrets.AUTH_USER }}
