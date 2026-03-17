@@ -37,10 +37,9 @@ pub async fn backfill_missing_rates(
         return Ok(());
     }
 
-    info!(
-        count = missing_dates.len(),
-        "starting historical data backfill"
-    );
+    let total_missing = missing_dates.len();
+    info!(count = total_missing, "starting historical data backfill");
+    metrics::gauge!("backfill_remaining_dates").set(total_missing as f64);
 
     for date in missing_dates {
         let date_str = date.format("%Y-%m-%d").to_string();
@@ -66,9 +65,12 @@ pub async fn backfill_missing_rates(
 
         insert_rates(&state.db, &date, &filtered_rates).await?;
 
+        metrics::counter!("backfill_dates_total").increment(1);
+        metrics::gauge!("backfill_remaining_dates").decrement(1.0);
         info!(count = filtered_rates.len(), date = %date_str, "saved rates");
     }
 
+    metrics::gauge!("backfill_remaining_dates").set(0.0);
     info!("backfill complete");
     Ok(())
 }
@@ -194,6 +196,7 @@ pub async fn daily_rate_updater(state: AppState) {
         tokio::time::sleep(tokio::time::Duration::from_secs(wait)).await;
 
         if let Err(e) = fetch_today_rates(&state).await {
+            metrics::counter!("rate_fetch_failures_total").increment(1);
             warn!(error = %e, "failed to fetch today's rates");
         }
     }

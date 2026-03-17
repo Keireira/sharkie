@@ -46,7 +46,7 @@ pub async fn get_history(
         rebase_rates(&state, &mut data, &base, &currency_filter).await?;
     }
 
-    let limit = query.limit.unwrap_or(366).min(366).max(1) as usize;
+    let limit = query.limit.unwrap_or(366).clamp(1, 366) as usize;
     let offset = query.offset.unwrap_or(0) as usize;
 
     let includes_today = includes_today_date(&date_filter);

@@ -4,10 +4,13 @@ mod models;
 mod routes;
 mod services;
 mod state;
+mod telemetry;
 
 use std::time::Duration;
 
 use axum::http::{HeaderName, HeaderValue, header};
+use axum::routing::get;
+use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
@@ -16,7 +19,6 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::set_header::SetResponseHeaderLayer;
 use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
-use sqlx::PgPool;
 use tracing::{info, warn};
 
 use crate::config::Config;
@@ -49,8 +51,10 @@ async fn main() {
 
     info!("database connected and migrations applied");
 
-    // Spawn pool health monitor (SELECT 1 every 30s)
-    tokio::spawn(pool_health_monitor(pool.clone()));
+    let metrics_handle = telemetry::setup();
+
+    // Spawn pool health + metrics monitor (SELECT 1 + pool gauges every 30s)
+    tokio::spawn(telemetry::pool_monitor(pool.clone()));
 
     let http_client = reqwest::Client::new();
     let state = AppState {
@@ -62,6 +66,7 @@ async fn main() {
     // Backfill missing historical data
     info!("checking for missing historical data");
     if let Err(e) = services::rates::backfill_missing_rates(&state).await {
+        metrics::counter!("backfill_failures_total").increment(1);
         tracing::warn!(error = %e, "failed to backfill missing rates");
     }
 
@@ -119,6 +124,16 @@ async fn main() {
     // Order matters: outermost layer runs first.
     // Bottom-up: request flows from last .layer() → first .layer() → handler
     let app = routes::router()
+        .route(
+            "/metrics",
+            get({
+                let handle = metrics_handle;
+                move || {
+                    let handle = handle.clone();
+                    async move { handle.render() }
+                }
+            }),
+        )
         .layer(cors)
         // Security headers on every response
         .layer(hsts)
@@ -155,6 +170,8 @@ async fn main() {
             axum::http::StatusCode::REQUEST_TIMEOUT,
             Duration::from_secs(30),
         ))
+        // Prometheus HTTP metrics (outermost — captures everything incl. rate-limited/timed-out)
+        .layer(axum::middleware::from_fn(telemetry::track_http))
         .with_state(state.clone());
 
     // Spawn background task for daily rate updates
@@ -206,32 +223,6 @@ async fn connect_with_retry(url: &str, max_retries: u32) -> PgPool {
         }
     }
     unreachable!()
-}
-
-/// Periodically runs `SELECT 1` to verify pool health.
-/// Logs a warning on failure and an info message when connectivity is restored.
-async fn pool_health_monitor(pool: PgPool) {
-    let mut healthy = true;
-
-    loop {
-        tokio::time::sleep(Duration::from_secs(30)).await;
-
-        match sqlx::query_scalar::<_, i32>("SELECT 1")
-            .fetch_one(&pool)
-            .await
-        {
-            Ok(_) => {
-                if !healthy {
-                    info!("database connectivity restored");
-                    healthy = true;
-                }
-            }
-            Err(e) => {
-                warn!(error = %e, "database health check failed");
-                healthy = false;
-            }
-        }
-    }
 }
 
 async fn shutdown_signal() {

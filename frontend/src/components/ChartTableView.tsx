@@ -54,7 +54,7 @@ interface ChartTableViewProps {
 	tableCurrencies: string[];
 }
 
-const ChartTableView = ({ data, isLoading, isError, error, chartCurrencies, tableCurrencies }: ChartTableViewProps) => {
+const ChartTableView = ({ data, isLoading, isError, error, chartCurrencies }: ChartTableViewProps) => {
 	const { t } = useTranslation();
 	const [view, setView] = useState<'chart' | 'table'>('chart');
 

@@ -35,6 +35,12 @@ impl IntoResponse for ApiError {
             ),
         };
 
+        metrics::counter!(
+            "http_errors_total",
+            "status" => status.as_u16().to_string(),
+        )
+        .increment(1);
+
         let body = Json(json!({
             "status": "error",
             "code": status.as_u16(),
