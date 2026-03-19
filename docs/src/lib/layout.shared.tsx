@@ -1,23 +1,21 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
-// fill this with your actual GitHub info, for example:
 export const gitConfig = {
-	user: 'fuma-nama',
-	repo: 'fumadocs',
-	branch: 'main'
+	user: 'Keireira',
+	repo: 'sharkie',
+	branch: 'master'
 };
 
-export function baseOptions(): BaseLayoutProps {
-	return {
-		nav: {
-			title: 'My App'
-		},
-		links: [
-			{
-				text: 'OpenAPI Reference',
-				url: '/api-reference'
-			}
-		],
-		githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`
-	};
-}
+export const baseOptions = (): BaseLayoutProps => ({
+	nav: {
+		title: 'Sharkie'
+	},
+	links: [
+		{
+			text: 'OpenAPI Reference',
+			url: '/api-reference'
+		}
+	],
+	githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`
+});
+

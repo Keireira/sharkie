@@ -170,8 +170,8 @@ async fn main() {
         ))
         // Rate limiting (60 req/min per IP)
         .layer(governor_limiter)
-        // Request body limit (1 MB -- all endpoints are GET, but protect against abuse)
-        .layer(RequestBodyLimitLayer::new(1024 * 1024))
+        // Request body limit (0.25 MB -- all endpoints are GET, but protect against abuse)
+        .layer(RequestBodyLimitLayer::new(1024 * 256))
         // Per-request timeout (30 seconds)
         .layer(TimeoutLayer::with_status_code(
             axum::http::StatusCode::REQUEST_TIMEOUT,

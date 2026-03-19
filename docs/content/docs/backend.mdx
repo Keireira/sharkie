@@ -69,7 +69,7 @@ Middleware is applied in `main.rs` as a layered tower stack. Order (outermost fi
 |-------|-------|---------|
 | **Prometheus metrics** | `metrics` | Request count + latency histograms (outermost — captures everything) |
 | **Timeout** | `tower-http::timeout` | 30s per-request deadline → 408 |
-| **Body limit** | `tower-http::limit` | 1 MB request body cap |
+| **Body limit** | `tower-http::limit` | 256 Kb request body cap |
 | **Rate limiting** | `tower_governor` | 60 req/min per IP (SmartIpKeyExtractor) |
 | **Request ID** | `tower-http::request_id` | UUID v4 in `x-request-id`, propagated to response |
 | **Tracing** | `tower-http::trace` | Structured logs with method, URI, request ID |

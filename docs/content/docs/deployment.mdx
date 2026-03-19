@@ -36,29 +36,39 @@ All services are on the `sharkie-network` bridge network.
 
 ## CI/CD Pipeline
 
-Three GitHub Actions workflows:
+Two GitHub Actions workflows handle the full pipeline:
 
-### 1. Build Backend Image
-- **Trigger:** Push to `master` (excluding `frontend/` paths)
-- **Steps:** Checkout → Registry login → Docker build → Push → Cleanup
+### CI (`ci.yml`)
 
-### 2. Build Frontend Image
-- **Trigger:** Push to `master` (only `frontend/` paths)
-- **Steps:** Checkout → Registry login → Docker build → Push → Cleanup
+Runs on every push and PR to `master`. Two parallel jobs:
 
-### 3. Deploy
-- **Trigger:** After both image builds complete successfully
-- **Steps:** SSH to server → Copy `docker-compose.yml` → Pull images → `docker compose up -d` → Prune old images
+- **Backend checks** — `cargo check`, `cargo clippy -D warnings`, `cargo-deny` advisory audit. Uses `Swatinem/rust-cache` for cargo caching.
+- **Frontend checks** — Biome lint, TypeScript type check, `pnpm audit`. Uses `actions/setup-node` with pnpm store caching.
+
+### Deploy (`deploy.yml`)
+
+Runs on push to `master` (excludes `docs/`, `rules/`, `*.md`). Uses `dorny/paths-filter` to detect which components changed and only rebuilds what's needed.
+
+**Build Backend** (conditional on `src/`, `migrations/`, `Cargo.*`, `Dockerfile` changes):
+- Docker Buildx with `docker/build-push-action`
+- Layer caching via GitHub Actions cache (`type=gha, mode=max`)
+- Pushes to `registry.keireira.com/sharkie:latest`
+
+**Build Frontend** (conditional on `frontend/` changes):
+- Docker Buildx with `docker/build-push-action`
+- Layer caching via GitHub Actions cache (`type=gha, mode=max`)
+- Pushes to `registry.keireira.com/sharkie-fe:latest`
+
+**Deploy** (runs after both builds, skipped if nothing changed):
+- Copies `docker-compose.yml` to server via SCP
+- SSH: pulls images → `docker compose up -d` → prunes old images
 
 ## Manual Deployment
 
 ```bash
 # Build and push images manually
-docker build -t registry.keireira.com/sharkie:latest .
-docker push registry.keireira.com/sharkie:latest
-
-docker build -t registry.keireira.com/sharkie-fe:latest frontend
-docker push registry.keireira.com/sharkie-fe:latest
+docker buildx build --push -t registry.keireira.com/sharkie:latest .
+docker buildx build --push -t registry.keireira.com/sharkie-fe:latest frontend
 
 # Deploy on server
 docker compose pull

@@ -7,44 +7,12 @@ description: Planned improvements and known issues
 
 # Roadmap
 
-## Implemented
-
-| Feature                                                 | Status |
-| ------------------------------------------------------- | ------ |
-| Rate limiting (60 req/min per IP)                       | Done   |
-| Security headers (HSTS, nosniff, DENY, referrer-policy) | Done   |
-| Request body size limit (1 MB)                          | Done   |
-| Request timeout (30s → 408)                             | Done   |
-| Response compression (gzip + brotli)                    | Done   |
-| Cache headers (per-route, CDN-aware)                    | Done   |
-| Request ID tracing (UUID, structured logs)              | Done   |
-| Query execution timing in logs                          | Done   |
-| Timezone-aware date clamping                            | Done   |
-| DB-aware health check (`SELECT 1`)                      | Done   |
-| Date range validation (5 year max)                      | Done   |
-| Graceful shutdown (SIGTERM + Ctrl+C)                    | Done   |
-| CORS (configurable via env)                             | Done   |
-| Dependabot (security-only updates)                      | Done   |
-| CI pipeline (clippy + biome + audit)                    | Done   |
-| DB connection retry with exponential backoff            | Done   |
-| Pool health monitoring (`SELECT 1` every 30s)           | Done   |
-| Pagination (`limit`/`offset` on `/history`)             | Done   |
-| Prometheus metrics endpoint (`/metrics`)                | Done   |
-| Prometheus alerting rules (`prometheus/alerts.yml`)     | Done   |
-| OpenAPI spec via utoipa (`/openapi.json`)               | Done   |
-
 ---
-
-## Priority 1 — Reliability
 
 ### Backfill Error Recovery
 
 - Currently backfill stops on first API error. Should skip failed dates and retry later.
 - Add backfill progress tracking so it can resume after restart
-
----
-
-## Priority 2 — API Improvements
 
 ### API Versioning
 
@@ -58,23 +26,14 @@ GET /v1/history?...
 
 Add CSP headers with nonce-based script policy.
 
----
-
-## Priority 3 — Infrastructure
-
 ### CI Pipeline Enhancement
 
-- Add build caching for faster CI runs
 - Add E2E smoke tests post-deploy (hit `/health` endpoint)
 
 ### Database
 
 - Use TimescaleDB for time-series optimizations on `exchange_rates` table
 - Add `EXPLAIN ANALYZE` for slow query detection
-
----
-
-## Priority 4 — Developer Experience
 
 ### Testing
 
