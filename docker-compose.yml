@@ -5,6 +5,9 @@ services:
     restart: unless-stopped
     env_file:
       - sharkie_db.env
+    environment:
+      - TIMESCALEDB_TELEMETRY=off
+    command: ["postgres", "-c", "shared_preload_libraries=timescaledb"]
     volumes:
       - sharkie_db_data:/var/lib/postgresql/data
     healthcheck:
