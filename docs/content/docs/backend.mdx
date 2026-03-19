@@ -155,7 +155,7 @@ The API spec is generated at compile time via `utoipa` and served at `GET /opena
 
 ## Database
 
-Single table with composite primary key:
+Single table with composite primary key, running on **TimescaleDB** (PostgreSQL extension for time-series data):
 
 ```sql
 CREATE TABLE exchange_rates (
@@ -168,5 +168,13 @@ CREATE TABLE exchange_rates (
 
 CREATE INDEX idx_rates_date ON exchange_rates(date);
 ```
+
+### TimescaleDB Hypertable
+
+The `exchange_rates` table is converted to a TimescaleDB hypertable partitioned by `date` with 7-day chunks (~1,050 rows per chunk). This provides:
+
+- **Chunk exclusion** — queries with date filters skip irrelevant chunks entirely
+- **Native compression** — chunks older than 3 months are automatically compressed, segmented by `currency_code` and ordered by `date DESC`
+- **Full SQL compatibility** — all existing queries, indexes, and `ON CONFLICT` upserts work unchanged
 
 Migrations are managed by SQLx and run automatically on startup.

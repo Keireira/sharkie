@@ -7,7 +7,7 @@ description: System architecture and project structure
 
 # Architecture
 
-Sharkie follows a classic three-tier architecture: a Rust API backend, a PostgreSQL database, and a statically-exported React frontend served by Nginx.
+Sharkie follows a classic three-tier architecture: a Rust API backend, a PostgreSQL database (with TimescaleDB for time-series optimization), and a statically-exported React frontend served by Nginx.
 
 ## System Overview
 
@@ -19,10 +19,11 @@ Sharkie follows a classic three-tier architecture: a Rust API backend, a Postgre
                                           │            │
                                           └─────┬──────┘
                                                 │
-                                          ┌─────▾──────┐
-                                          │ PostgreSQL  │
-                                          │   port 5432 │
-                                          └────────────┘
+                                          ┌──────────────┐
+                                          │  PostgreSQL   │
+                                          │ + TimescaleDB │
+                                          │   port 5432   │
+                                          └──────────────┘
 ```
 
 The frontend proxies API requests through Nginx at `/api/proxy/` to the Rust backend.
@@ -83,6 +84,7 @@ sharkie/
 
 - **Static export** — the frontend is built as static HTML/JS and served by Nginx, avoiding Node.js in production
 - **USD normalization** — all rates are stored relative to USD; conversion to other bases is computed at query time
+- **TimescaleDB hypertable** — `exchange_rates` is partitioned into 7-day chunks with automatic compression for data older than 3 months
 - **Single reqwest::Client** — shared HTTP client across the application (not created per request)
 - **Connection resilience** — DB connection retries with exponential backoff on startup; pool health monitored every 30s
 - **Prometheus monitoring** — request metrics, DB pool gauges, backfill progress, and error counters exported at `/metrics` with alerting rules in `prometheus/alerts.yml`

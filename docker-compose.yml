@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17-alpine
+    image: timescale/timescaledb:latest-pg17
     container_name: SHARKIE-DB
     restart: unless-stopped
     env_file:

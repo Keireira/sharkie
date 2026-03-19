@@ -28,7 +28,7 @@ Three-stage build:
 
 | Service | Image | Port | Health Check |
 |---------|-------|------|-------------|
-| `db` | `postgres:17-alpine` | 5432 (internal) | `pg_isready` |
+| `db` | `timescale/timescaledb:latest-pg17` | 5432 (internal) | `pg_isready` |
 | `app` | `registry.keireira.com/sharkie:latest` | 4444 → 3000 | `curl /health` |
 | `frontend` | `registry.keireira.com/sharkie-fe:latest` | 3333 → 3000 | `nginx -t` |
 
