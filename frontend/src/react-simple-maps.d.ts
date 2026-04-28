@@ -1,5 +1,5 @@
 declare module 'react-simple-maps' {
-	import type { ComponentType, ReactNode, CSSProperties } from 'react';
+	import type { ComponentType, CSSProperties, ReactNode } from 'react';
 
 	interface ProjectionConfig {
 		rotate?: [number, number, number];
