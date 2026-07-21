@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@scalar/api-reference-react": "^0.9.29",
-    "@takumi-rs/image-response": "^1.1.2",
+    "@takumi-rs/image-response": "^2.4.0",
     "fumadocs-core": "16.8.5",
     "fumadocs-mdx": "14.3.2",
     "fumadocs-ui": "16.8.5",
